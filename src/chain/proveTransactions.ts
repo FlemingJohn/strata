@@ -3,6 +3,7 @@ import type { JsonRpcProvider } from "ethers";
 import type { DemoTransaction } from "../constants/demoTransactions";
 import type { ProvingAttempt, ProvingProgressListener } from "../types/proving";
 import { PROOF_REQUEST_TIMEOUT_MILLISECONDS } from "../constants/networkSettings";
+import { decodeTransactionBytes } from "./decodeTransactionBytes";
 import { resolveProofBuilderUrl } from "./resolveServiceUrls";
 
 function createWaitingAttempts(transactions: DemoTransaction[]): ProvingAttempt[] {
@@ -15,6 +16,7 @@ function createWaitingAttempts(transactions: DemoTransaction[]): ProvingAttempt[
     merkleSiblingCount: null,
     continuityRootCount: null,
     wasCached: false,
+    decoded: null,
     failureReason: null
   }));
 }
@@ -56,6 +58,7 @@ export async function proveTransactions(
       attempt.merkleSiblingCount = proof.merkleProof.siblings.length;
       attempt.continuityRootCount = proof.continuityProof.roots.length;
       attempt.wasCached = proof.cached;
+      attempt.decoded = decodeTransactionBytes(proof.txBytes);
       attempt.status = "verifying";
       onProgress(attempts);
 
