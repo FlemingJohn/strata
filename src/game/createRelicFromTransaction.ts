@@ -31,6 +31,8 @@ export function createRelicFromTransaction(attempt: ProvingAttempt): EquippedRel
     definition: findDefinitionForOrigin(origin),
     sourceTransactionHash: attempt.transactionHash,
     sourceBlockNumber: attempt.blockNumber,
+    sourceMerkleRoot: attempt.transactionMerkleRoot ?? attempt.transactionHash,
+    sourceMerkleDepth: attempt.merkleSiblingCount ?? 0,
     sourceYear: attempt.year,
     stratumNumber: stratum.stratumNumber
   };
