@@ -1,4 +1,5 @@
 import { createCursorMenu } from "./createCursorMenu";
+import { showProvingScreen } from "./showProvingScreen";
 import { loadSpriteSheet } from "../rendering/loadSpriteSheet";
 import { playSpriteAnimation } from "../rendering/playSpriteAnimation";
 import { startStrataBackground } from "../rendering/startStrataBackground";
@@ -86,10 +87,15 @@ export function showTitleScreen(container: HTMLElement): void {
   tagline.textContent = "Dig through the history you made";
 
   const menu = createCursorMenu([
-    { label: "Connect wallet", onChoose: () => undefined },
-    { label: "Demo wallet", onChoose: () => undefined },
+    { label: "Connect wallet", onChoose: () => leaveForProving() },
+    { label: "Demo wallet", onChoose: () => leaveForProving() },
     { label: "Ladder", onChoose: () => undefined }
   ]);
+
+  function leaveForProving(): void {
+    menu.stopListening();
+    showProvingScreen(container);
+  }
 
   panel.append(
     createGameName(),
