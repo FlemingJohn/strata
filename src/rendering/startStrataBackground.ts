@@ -33,6 +33,8 @@ export function startStrataBackground(canvas: HTMLCanvasElement): BackgroundCont
     canvasHeight = Math.ceil(window.innerHeight / RENDER_SCALE_DIVISOR);
     canvas.width = canvasWidth;
     canvas.height = canvasHeight;
+    canvas.style.width = `${canvasWidth * RENDER_SCALE_DIVISOR}px`;
+    canvas.style.height = `${canvasHeight * RENDER_SCALE_DIVISOR}px`;
     context.imageSmoothingEnabled = false;
 
     if (prefersReducedMotion) {
