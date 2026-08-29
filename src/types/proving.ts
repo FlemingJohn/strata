@@ -1,3 +1,5 @@
+import type { DecodedTransaction } from "./decodedTransaction";
+
 export type ProvingStatus = "waiting" | "building" | "verifying" | "verified" | "failed";
 
 export interface ProvingAttempt {
@@ -9,6 +11,7 @@ export interface ProvingAttempt {
   merkleSiblingCount: number | null;
   continuityRootCount: number | null;
   wasCached: boolean;
+  decoded: DecodedTransaction | null;
   failureReason: string | null;
 }
 
