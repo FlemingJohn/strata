@@ -229,3 +229,41 @@
   color: var(--colour-text);
   text-decoration: underline;
 }
+
+.weapon-icon {
+  image-rendering: pixelated;
+  filter: drop-shadow(3px 3px 0 rgba(0, 0, 0, 0.6));
+}
+
+.loadout-row {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) 56px minmax(0, 1.4fr);
+  gap: 8px;
+  align-items: center;
+  text-align: left;
+  background: transparent;
+  border: var(--border-thickness) solid var(--colour-border-dark);
+  padding: 8px;
+  color: var(--colour-text-muted);
+  font-size: var(--text-size-small);
+}
+
+.loadout-row-chosen {
+  background: rgba(224, 162, 51, 0.1);
+  color: var(--colour-text);
+}
+
+.loadout-row-name {
+  text-transform: uppercase;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.loadout-row-year,
+.loadout-row-effect {
+  color: var(--colour-text-faint);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
