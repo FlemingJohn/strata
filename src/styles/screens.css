@@ -212,3 +212,20 @@
     line-height: 32px;
   }
 }
+
+.proof-row-status-failed {
+  color: var(--colour-boom);
+}
+
+.proof-row-hash {
+  color: var(--colour-text-muted);
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.proof-row-hash:hover {
+  color: var(--colour-text);
+  text-decoration: underline;
+}
