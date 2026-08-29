@@ -5,6 +5,8 @@ import { STRATUM_SETTINGS } from "../constants/stratumSettings";
 import { createFloorDescription, estimateTransactionCount } from "../game/createFloorDescription";
 import { generateDungeonFloor } from "../game/generateDungeonFloor";
 import { findDeepestRelic } from "../game/chooseWeaponStyle";
+import { createCursorMenu } from "./createCursorMenu";
+import { showCombatScreen } from "./showCombatScreen";
 
 const PURPOSE_SYMBOLS: Record<RoomPurpose, string> = {
   start: "◉",
@@ -117,6 +119,16 @@ export function showFloorScreen(container: HTMLElement, relics: EquippedRelic[])
   legend.className = "data-text";
   legend.textContent = "◉ start   ▣ combat   ◆ relic   ☠ boss";
 
-  panel.append(label, heading, subheading, facts, createFloorGrid(floor), legend);
+  const menu = createCursorMenu([
+    {
+      label: "Enter the floor",
+      onChoose: () => {
+        menu.stopListening();
+        showCombatScreen(container, floor, relics);
+      }
+    }
+  ]);
+
+  panel.append(label, heading, subheading, facts, createFloorGrid(floor), legend, menu.element);
   container.append(panel);
 }
