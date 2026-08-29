@@ -17,11 +17,16 @@
   --font-logo: "Press Start 2P", monospace;
   --font-body: "Silkscreen", monospace;
 
-  --spacing-small: 0.5rem;
-  --spacing-medium: 1rem;
-  --spacing-large: 2rem;
+  --spacing-small: 8px;
+  --spacing-medium: 16px;
+  --spacing-large: 32px;
 
-  --border-thickness: 3px;
+  --border-thickness: 4px;
+
+  --text-size-small: 16px;
+  --text-size-body: 16px;
+  --text-size-large: 24px;
+  --text-size-logo: 32px;
 }
 
 * {
@@ -33,18 +38,21 @@ body {
   background: var(--colour-ground);
   color: var(--colour-text);
   font-family: var(--font-body);
-  font-size: 16px;
-  line-height: 1.7;
-  letter-spacing: 0.02em;
+  font-size: var(--text-size-body);
+  line-height: 24px;
   -webkit-font-smoothing: none;
-  image-rendering: pixelated;
+  text-rendering: optimizeSpeed;
 }
 
 button {
   font-family: var(--font-body);
   font-size: inherit;
-  letter-spacing: inherit;
+  line-height: inherit;
   cursor: pointer;
+}
+
+img {
+  image-rendering: pixelated;
 }
 
 button:focus-visible,
