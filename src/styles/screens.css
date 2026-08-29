@@ -1,0 +1,121 @@
+.title-screen-name {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(2.5rem, 9vw, 4.5rem);
+  letter-spacing: -0.02em;
+  line-height: 1;
+  margin: 0;
+  text-align: center;
+}
+
+.title-screen-tagline {
+  color: var(--colour-text-muted);
+  text-align: center;
+  margin: 0;
+}
+
+.primary-action {
+  background: transparent;
+  color: var(--colour-text);
+  border: 1px solid var(--colour-border);
+  padding: 0.6rem 1.4rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.primary-action:hover {
+  border-color: var(--colour-bedrock);
+  color: var(--colour-bedrock);
+}
+
+.secondary-action {
+  background: transparent;
+  color: var(--colour-text-muted);
+  border: 0;
+  padding: 0.4rem 0;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-decoration: underline;
+}
+
+.history-year-row {
+  display: grid;
+  grid-template-columns: 3rem 1fr 3rem;
+  gap: var(--spacing-small);
+  align-items: center;
+  font-family: var(--font-data);
+  font-size: 0.72rem;
+}
+
+.history-year-bar {
+  height: 8px;
+  background: var(--colour-bedrock);
+}
+
+.proof-row {
+  display: grid;
+  grid-template-columns: 1.2rem 1fr auto;
+  gap: var(--spacing-small);
+  align-items: center;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid var(--colour-border-soft);
+  font-family: var(--font-data);
+  font-size: 0.72rem;
+}
+
+.proof-row-status-verified {
+  color: var(--colour-surface);
+}
+
+.proof-row-status-pending {
+  color: var(--colour-bedrock);
+}
+
+.proof-row-status-waiting {
+  color: var(--colour-text-faint);
+}
+
+.relic-card {
+  border: 1px solid var(--colour-border);
+  background: var(--colour-panel);
+  padding: var(--spacing-medium);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-small);
+  align-items: center;
+  text-align: center;
+}
+
+.relic-card-name {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 1rem;
+  margin: 0;
+}
+
+.relic-card-description {
+  font-size: 0.76rem;
+  color: var(--colour-text-muted);
+  margin: 0;
+}
+
+.relic-card-origin {
+  font-family: var(--font-data);
+  font-size: 0.6rem;
+  color: var(--colour-text-faint);
+}
+
+.relic-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--spacing-small);
+}
+
+.game-viewport {
+  border: 1px solid var(--colour-border);
+  background: #000;
+  width: min(96vw, 960px);
+  height: auto;
+}
