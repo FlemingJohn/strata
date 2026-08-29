@@ -9,6 +9,7 @@ export interface ProvingAttempt {
   blockNumber: number | null;
   status: ProvingStatus;
   merkleSiblingCount: number | null;
+  transactionMerkleRoot: string | null;
   continuityRootCount: number | null;
   wasCached: boolean;
   decoded: DecodedTransaction | null;
