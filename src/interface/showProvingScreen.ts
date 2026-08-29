@@ -8,6 +8,8 @@ import {
 import { createCreditcoinProvider } from "../chain/createCreditcoinProvider";
 import { findEthereumChainKey } from "../chain/findEthereumChainKey";
 import { proveTransactions } from "../chain/proveTransactions";
+import { createRelicsFromTransactions } from "../game/createRelicFromTransaction";
+import { showRelicScreen } from "./showRelicScreen";
 
 const STATUS_SYMBOLS: Record<ProvingStatus, string> = {
   waiting: "·",
@@ -24,6 +26,8 @@ const STATUS_CLASS_NAMES: Record<ProvingStatus, string> = {
   verified: "proof-row-status-verified",
   failed: "proof-row-status-failed"
 };
+
+const REVEAL_DELAY_MILLISECONDS = 900;
 
 function shortenHash(fullHash: string): string {
   return `${fullHash.slice(0, 10)}…${fullHash.slice(-6)}`;
@@ -121,7 +125,12 @@ export function showProvingScreen(container: HTMLElement): void {
       return proveTransactions(provider, chainKey, DEMO_WALLET_TRANSACTIONS, renderAttempts);
     })
     .then((attempts) => {
-      heading.textContent = `${countVerified(attempts)} relics recovered`;
+      const relics = createRelicsFromTransactions(attempts);
+      heading.textContent = `${relics.length} relics recovered`;
+
+      if (relics.length > 0) {
+        window.setTimeout(() => showRelicScreen(container, relics), REVEAL_DELAY_MILLISECONDS);
+      }
     })
     .catch((failure) => {
       heading.textContent = "Creditcoin could not be reached";
