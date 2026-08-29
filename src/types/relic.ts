@@ -43,6 +43,8 @@ export interface EquippedRelic {
   definition: RelicDefinition;
   sourceTransactionHash: string;
   sourceBlockNumber: number;
+  sourceMerkleRoot: string;
+  sourceMerkleDepth: number;
   sourceYear: number;
   stratumNumber: number;
 }
