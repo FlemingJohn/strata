@@ -21,3 +21,14 @@ export interface AnimationPlayback {
 }
 
 export type FacingDirection = "down" | "up" | "left" | "right";
+
+export interface SpriteCropRegion {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+}
+
+export interface SpriteAnimationController {
+  stop: () => void;
+}
