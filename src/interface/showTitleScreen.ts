@@ -1,5 +1,13 @@
 import { createCursorMenu } from "./createCursorMenu";
+import { loadSpriteSheet } from "../rendering/loadSpriteSheet";
+import { playSpriteAnimation } from "../rendering/playSpriteAnimation";
 import { startStrataBackground } from "../rendering/startStrataBackground";
+import {
+  HERO_BODY_CROP_REGION,
+  HERO_STANDING_DOWN_PATH,
+  TITLE_SCREEN_HERO_FRAMES_PER_SECOND,
+  TITLE_SCREEN_HERO_SCALE
+} from "../constants/spriteSheetPaths";
 
 function createBackgroundCanvas(): HTMLCanvasElement {
   const existingCanvas = document.querySelector<HTMLCanvasElement>(".background-canvas");
@@ -26,6 +34,28 @@ function createGameName(): HTMLElement {
 
   name.append(beforeAccent, accent, afterAccent);
   return name;
+}
+
+function createStandingHero(): HTMLCanvasElement {
+  const heroCanvas = document.createElement("canvas");
+  heroCanvas.className = "title-screen-hero";
+  heroCanvas.setAttribute("aria-hidden", "true");
+
+  loadSpriteSheet(HERO_STANDING_DOWN_PATH)
+    .then((spriteSheet) => {
+      playSpriteAnimation(
+        heroCanvas,
+        spriteSheet,
+        TITLE_SCREEN_HERO_FRAMES_PER_SECOND,
+        TITLE_SCREEN_HERO_SCALE,
+        HERO_BODY_CROP_REGION
+      );
+    })
+    .catch(() => {
+      heroCanvas.remove();
+    });
+
+  return heroCanvas;
 }
 
 function createWorldStatusStrip(): HTMLElement {
@@ -61,6 +91,12 @@ export function showTitleScreen(container: HTMLElement): void {
     { label: "Ladder", onChoose: () => undefined }
   ]);
 
-  panel.append(createGameName(), tagline, menu.element, createWorldStatusStrip());
+  panel.append(
+    createGameName(),
+    tagline,
+    createStandingHero(),
+    menu.element,
+    createWorldStatusStrip()
+  );
   container.append(panel);
 }
