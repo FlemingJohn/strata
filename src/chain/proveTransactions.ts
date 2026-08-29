@@ -14,6 +14,7 @@ function createWaitingAttempts(transactions: DemoTransaction[]): ProvingAttempt[
     blockNumber: null,
     status: "waiting",
     merkleSiblingCount: null,
+    transactionMerkleRoot: null,
     continuityRootCount: null,
     wasCached: false,
     decoded: null,
@@ -56,6 +57,7 @@ export async function proveTransactions(
       const proof = proofResult.data;
       attempt.blockNumber = proof.headerNumber;
       attempt.merkleSiblingCount = proof.merkleProof.siblings.length;
+      attempt.transactionMerkleRoot = proof.merkleProof.root;
       attempt.continuityRootCount = proof.continuityProof.roots.length;
       attempt.wasCached = proof.cached;
       attempt.decoded = decodeTransactionBytes(proof.txBytes);
