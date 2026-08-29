@@ -1,36 +1,34 @@
-import type { EquippedRelic, RelicName } from "../types/relic";
+import type { EquippedRelic, RelicDefinition, RelicName, RelicOrigin } from "../types/relic";
 import type { ProvingAttempt } from "../types/proving";
 import { RELIC_DEFINITIONS } from "../constants/relicDefinitions";
+import { detectTransactionTrait } from "./detectTransactionTrait";
 import { findStratumForBlock } from "./findStratumForBlock";
 
-const RELIC_NAMES_BY_STRATUM: Record<number, RelicName[]> = {
-  1: ["driftStone", "warHelm"],
-  2: ["cursedSherd", "apeMask"],
-  3: ["ashShard", "vaultSeal"],
-  4: ["frontierEmber", "forkCairn"]
+const RELIC_NAME_BY_ORIGIN: Record<RelicOrigin, RelicName> = {
+  failedTransaction: "cursedSherd",
+  contractCreation: "forkCairn",
+  tokenMint: "apeMask",
+  burnTransfer: "ashShard",
+  veryOldTransaction: "frontierEmber",
+  largeValueTransfer: "vaultSeal",
+  highGasTransaction: "warHelm",
+  plainTransfer: "driftStone"
 };
 
-function chooseIndexFromHash(transactionHash: string, choiceCount: number): number {
-  let total = 0;
-
-  for (let position = 2; position < transactionHash.length; position++) {
-    total = (total + transactionHash.charCodeAt(position)) % 65536;
-  }
-
-  return total % choiceCount;
+function findDefinitionForOrigin(origin: RelicOrigin): RelicDefinition {
+  return RELIC_DEFINITIONS[RELIC_NAME_BY_ORIGIN[origin]];
 }
 
 export function createRelicFromTransaction(attempt: ProvingAttempt): EquippedRelic | null {
-  if (attempt.status !== "verified" || attempt.blockNumber === null) {
+  if (attempt.status !== "verified" || attempt.blockNumber === null || !attempt.decoded) {
     return null;
   }
 
+  const origin = detectTransactionTrait(attempt.decoded, attempt.blockNumber);
   const stratum = findStratumForBlock(attempt.blockNumber);
-  const candidateNames = RELIC_NAMES_BY_STRATUM[stratum.stratumNumber];
-  const chosenName = candidateNames[chooseIndexFromHash(attempt.transactionHash, candidateNames.length)];
 
   return {
-    definition: RELIC_DEFINITIONS[chosenName],
+    definition: findDefinitionForOrigin(origin),
     sourceTransactionHash: attempt.transactionHash,
     sourceBlockNumber: attempt.blockNumber,
     sourceYear: attempt.year,
