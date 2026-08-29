@@ -1,6 +1,9 @@
 import { defineConfig } from "vite";
 import { resolve } from "path";
 
+const CREDITCOIN_TESTNET_RPC_URL = "https://rpc.cc3-testnet.creditcoin.network";
+const PROOF_BUILDER_API_URL = "https://proof-gen-api.cc3-testnet.creditcoin.network";
+
 export default defineConfig({
   resolve: {
     alias: {
@@ -14,7 +17,21 @@ export default defineConfig({
   },
   server: {
     port: 5173,
-    open: true
+    open: true,
+    proxy: {
+      "/creditcoinRpc": {
+        target: CREDITCOIN_TESTNET_RPC_URL,
+        changeOrigin: true,
+        secure: true,
+        rewrite: (requestPath) => requestPath.replace(/^\/creditcoinRpc/, "")
+      },
+      "/proofBuilder": {
+        target: PROOF_BUILDER_API_URL,
+        changeOrigin: true,
+        secure: true,
+        rewrite: (requestPath) => requestPath.replace(/^\/proofBuilder/, "")
+      }
+    }
   },
   build: {
     outDir: "dist",
