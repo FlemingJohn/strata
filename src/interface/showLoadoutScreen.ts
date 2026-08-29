@@ -9,6 +9,8 @@ import {
   SLICE_DURATION_SECONDS
 } from "../constants/playerSettings";
 import { chooseWeaponStyle, findDeepestRelic } from "../game/chooseWeaponStyle";
+import { showFloorScreen } from "./showFloorScreen";
+import { createCursorMenu } from "./createCursorMenu";
 import { STRATUM_SETTINGS } from "../constants/stratumSettings";
 
 const WEAPON_DAMAGE = {
@@ -109,6 +111,19 @@ export function showLoadoutScreen(container: HTMLElement, relics: EquippedRelic[
   renderList();
   describeWeapon();
 
-  panel.append(label, heading, list, weaponLine);
+  const menu = createCursorMenu([
+    {
+      label: "Descend",
+      onChoose: () => {
+        menu.stopListening();
+        showFloorScreen(
+          container,
+          relics.filter((relic) => chosenHashes.has(relic.sourceTransactionHash))
+        );
+      }
+    }
+  ]);
+
+  panel.append(label, heading, list, weaponLine, menu.element);
   container.append(panel);
 }
