@@ -30,8 +30,8 @@
 }
 
 .title-screen-hero {
-  width: 128px;
-  height: 128px;
+  image-rendering: pixelated;
+  filter: drop-shadow(4px 4px 0 rgba(0, 0, 0, 0.6));
 }
 
 .menu-list {
