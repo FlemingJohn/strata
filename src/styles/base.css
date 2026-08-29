@@ -2,8 +2,8 @@
   --colour-ground: #14110f;
   --colour-panel: #221d18;
   --colour-well: #0c0a08;
-  --colour-border: #3a312a;
-  --colour-border-soft: #2b241e;
+  --colour-border: #5e4e3e;
+  --colour-border-dark: #2b241e;
 
   --colour-text: #ede4d8;
   --colour-text-muted: #9c8c7a;
@@ -14,13 +14,14 @@
   --colour-winter: #4a7ca0;
   --colour-bedrock: #e0a233;
 
-  --font-heading: "Bodoni Moda", Georgia, serif;
-  --font-body: "Archivo", system-ui, sans-serif;
-  --font-data: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  --font-logo: "Press Start 2P", monospace;
+  --font-body: "Silkscreen", monospace;
 
   --spacing-small: 0.5rem;
   --spacing-medium: 1rem;
   --spacing-large: 2rem;
+
+  --border-thickness: 3px;
 }
 
 * {
@@ -33,18 +34,22 @@ body {
   color: var(--colour-text);
   font-family: var(--font-body);
   font-size: 16px;
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
+  line-height: 1.7;
+  letter-spacing: 0.02em;
+  -webkit-font-smoothing: none;
+  image-rendering: pixelated;
 }
 
 button {
   font-family: var(--font-body);
+  font-size: inherit;
+  letter-spacing: inherit;
   cursor: pointer;
 }
 
 button:focus-visible,
 a:focus-visible {
-  outline: 2px solid var(--colour-bedrock);
+  outline: var(--border-thickness) solid var(--colour-bedrock);
   outline-offset: 2px;
 }
 
