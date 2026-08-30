@@ -45,6 +45,7 @@ export function createPlayer(
     rollDirectionHorizontal: 0,
     rollDirectionVertical: 1,
 
-    currentAttackIdentifier: 0
+    currentAttackIdentifier: 0,
+    secondsUntilCastReady: 0
   };
 }
