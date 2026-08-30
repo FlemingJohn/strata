@@ -32,7 +32,7 @@ import {
 import { placeTorches } from "./placeTorches";
 import { drawRoomEdgeShadow } from "../rendering/drawRoomEdgeShadow";
 import { drawRoomTiles } from "../rendering/drawRoomTiles";
-import { drawSpriteFrame } from "../rendering/drawSpriteFrame";
+import { drawClothedHero } from "../rendering/drawClothedHero";
 import {
   findExitBeingUsed,
   findRoomInDirection,
@@ -289,13 +289,14 @@ export function runCombatLoop(
       return;
     }
 
-    drawSpriteFrame(
+    drawClothedHero(
       context,
       sheet,
       animationFrameIndex % sheet.frameCount,
       Math.round(player.horizontalPosition - sheet.frameWidth / 2),
       Math.round(player.verticalPosition - HERO_GROUND_OFFSET_PIXELS),
-      player.facing === "left"
+      player.facing === "left",
+      stratum.inkColour
     );
   }
 
