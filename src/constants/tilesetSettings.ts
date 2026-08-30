@@ -1,5 +1,6 @@
 export const FLOOR_TILESET_PATH = "/assets/pixelCrawler/Environment/Tilesets/Floors_Tiles.png";
 export const WALL_TILESET_PATH = "/assets/pixelCrawler/Environment/Tilesets/Wall_Tiles.png";
+export const DUNGEON_TILESET_PATH = "/assets/pixelCrawler/Environment/Tilesets/Dungeon_Tiles.png";
 
 export const TILESET_COLUMNS = 25;
 export const TILE_SIZE = 16;
