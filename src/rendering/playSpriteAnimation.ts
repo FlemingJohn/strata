@@ -3,13 +3,15 @@ import type {
   SpriteCropRegion,
   SpriteSheet
 } from "../types/spriteSheet";
+import { drawClothedHero } from "./drawClothedHero";
 
 export function playSpriteAnimation(
   canvas: HTMLCanvasElement,
   spriteSheet: SpriteSheet,
   framesPerSecond: number,
   displayScale: number,
-  cropRegion?: SpriteCropRegion
+  cropRegion?: SpriteCropRegion,
+  tunicColour?: string
 ): SpriteAnimationController {
   const context = canvas.getContext("2d");
 
@@ -40,9 +42,18 @@ export function playSpriteAnimation(
   let isRunning = true;
 
   function drawCurrentFrame(): void {
+    context.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (tunicColour) {
+      context.save();
+      context.translate(-visibleRegion.left, -visibleRegion.top);
+      drawClothedHero(context, spriteSheet, currentFrameIndex, 0, 0, false, tunicColour);
+      context.restore();
+      return;
+    }
+
     const sourceLeft = currentFrameIndex * spriteSheet.frameWidth + visibleRegion.left;
 
-    context.clearRect(0, 0, canvas.width, canvas.height);
     context.drawImage(
       spriteSheet.image,
       sourceLeft,
