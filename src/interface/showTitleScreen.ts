@@ -1,15 +1,13 @@
 import { createCursorMenu } from "./createCursorMenu";
 import { showProvingScreen } from "./showProvingScreen";
-import { loadSpriteSheet } from "../rendering/loadSpriteSheet";
-import { playSpriteAnimation } from "../rendering/playSpriteAnimation";
+import { loadLpcCharacter } from "../rendering/loadLpcCharacter";
+import { drawLpcCharacter } from "../rendering/drawLpcCharacter";
 import { startDungeonBackground } from "../rendering/startDungeonBackground";
 import {
-  HERO_BODY_CROP_REGION,
-  HERO_STANDING_DOWN_PATH,
-  TITLE_SCREEN_HERO_FRAMES_PER_SECOND,
+  LPC_FRAMES_PER_SECOND,
+  LPC_FRAME_SIZE,
   TITLE_SCREEN_HERO_SCALE
-} from "../constants/spriteSheetPaths";
-import { DEFAULT_TUNIC_COLOUR } from "../constants/heroClothingSettings";
+} from "../constants/lpcCharacterSettings";
 
 function createBackgroundCanvas(): HTMLCanvasElement {
   const existingCanvas = document.querySelector<HTMLCanvasElement>(".background-canvas");
@@ -42,18 +40,29 @@ function createStandingHero(): HTMLCanvasElement {
   const heroCanvas = document.createElement("canvas");
   heroCanvas.className = "title-screen-hero";
   heroCanvas.setAttribute("aria-hidden", "true");
+  heroCanvas.width = LPC_FRAME_SIZE;
+  heroCanvas.height = LPC_FRAME_SIZE;
+  heroCanvas.style.width = `${LPC_FRAME_SIZE * TITLE_SCREEN_HERO_SCALE}px`;
+  heroCanvas.style.height = `${LPC_FRAME_SIZE * TITLE_SCREEN_HERO_SCALE}px`;
 
-  loadSpriteSheet(HERO_STANDING_DOWN_PATH)
-    .then((spriteSheet) => {
-      playSpriteAnimation(
-        heroCanvas,
-        spriteSheet,
-        TITLE_SCREEN_HERO_FRAMES_PER_SECOND,
-        TITLE_SCREEN_HERO_SCALE,
-        HERO_BODY_CROP_REGION,
-        DEFAULT_TUNIC_COLOUR,
-        "standingDown"
-      );
+  const context = heroCanvas.getContext("2d");
+
+  if (!context) {
+    return heroCanvas;
+  }
+
+  context.imageSmoothingEnabled = false;
+
+  loadLpcCharacter()
+    .then((sheets) => {
+      const sheet = sheets.idle;
+      let frameIndex = 0;
+
+      window.setInterval(() => {
+        context.clearRect(0, 0, LPC_FRAME_SIZE, LPC_FRAME_SIZE);
+        drawLpcCharacter(context, sheet, frameIndex, "down", 0, 0);
+        frameIndex = (frameIndex + 1) % sheet.frameCount;
+      }, 1000 / LPC_FRAMES_PER_SECOND.idle);
     })
     .catch(() => {
       heroCanvas.remove();
