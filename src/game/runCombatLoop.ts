@@ -3,7 +3,7 @@ import type { DungeonFloor, DungeonRoom, RoomTileMap } from "../types/dungeon";
 import type { EnemyCharacter, Projectile } from "../types/enemy";
 import type { EnemySpriteLibrary } from "../rendering/loadEnemySprites";
 import type { ExitDirection } from "./findAdjacentRoom";
-import type { HeroSprites } from "../rendering/loadHeroSprites";
+import type { LpcCharacterSheets } from "../types/lpcCharacter";
 import type { PlayerCharacter } from "../types/player";
 import type { TileSheets } from "../rendering/loadTileSheets";
 import { KNOCKBACK_SPEED_PIXELS_PER_SECOND } from "../constants/animationSettings";
@@ -20,6 +20,7 @@ import {
 import { drawCombatHud } from "../rendering/drawCombatHud";
 import { drawEnemies, drawParticles, drawProjectiles } from "../rendering/drawEnemies";
 import type { TorchPlacement } from "../types/lighting";
+import { LPC_FRAME_SIZE, LPC_FRAMES_PER_SECOND, LPC_GROUND_OFFSET_PIXELS } from "../constants/lpcCharacterSettings";
 import { PLAYER_LIGHT_RADIUS_PIXELS } from "../constants/lightingSettings";
 import { drawEntityShadow } from "../rendering/drawEntityShadow";
 import { drawFloorSigil } from "../rendering/drawFloorSigil";
@@ -31,14 +32,13 @@ import {
 import { placeTorches } from "./placeTorches";
 import { drawRoomEdgeShadow } from "../rendering/drawRoomEdgeShadow";
 import { drawRoomTiles } from "../rendering/drawRoomTiles";
-import { drawClothedHero } from "../rendering/drawClothedHero";
+import { drawLpcCharacter } from "../rendering/drawLpcCharacter";
 import {
   findExitBeingUsed,
   findRoomInDirection,
   placePlayerAtOppositeDoor
 } from "./findAdjacentRoom";
-import { findSheetNameForPlayer } from "../rendering/loadHeroSprites";
-import { findBodyBands } from "../rendering/drawClothedHero";
+import { findAnimationForPlayer } from "../game/findAnimationForPlayer";
 import { generateRoomTiles } from "./generateRoomTiles";
 import { resolveAttackHits } from "./resolveAttackHits";
 import { spawnEnemiesForRoom } from "./createEnemy";
@@ -57,9 +57,6 @@ export interface CombatLoopHandlers {
   onFloorCompleted: (roomsCleared: number, kills: number) => void;
 }
 
-const WALKING_FRAMES_PER_SECOND = 10;
-const STANDING_FRAMES_PER_SECOND = 6;
-const ATTACK_FRAMES_PER_SECOND = 14;
 const SECONDS_BLOCKING_REENTRY = 0.4;
 
 export function runCombatLoop(
@@ -68,7 +65,7 @@ export function runCombatLoop(
   floor: DungeonFloor,
   startRoom: DungeonRoom,
   sheets: TileSheets,
-  heroSprites: HeroSprites,
+  heroSprites: LpcCharacterSheets,
   enemySprites: EnemySpriteLibrary,
   handlers: CombatLoopHandlers
 ): CombatLoopController {
@@ -276,14 +273,9 @@ export function runCombatLoop(
   }
 
   function drawPlayer(): void {
-    const sheetName = findSheetNameForPlayer(
-      player.activity,
-      player.facing,
-      player.weaponStyle
-    );
-    const sheet = heroSprites[sheetName];
+    const animationName = findAnimationForPlayer(player.activity, player.weaponStyle);
+    const sheet = heroSprites[animationName] ?? heroSprites.idle;
     const frameIndex = animationFrameIndex % sheet.frameCount;
-    const bands = findBodyBands(sheetName, frameIndex);
     const isFlickering =
       player.secondsRemainingInvulnerable > 0 && Math.floor(performance.now() / 60) % 2 === 0;
 
@@ -291,15 +283,13 @@ export function runCombatLoop(
       return;
     }
 
-    drawClothedHero(
+    drawLpcCharacter(
       context,
       sheet,
-      sheetName,
       frameIndex,
-      Math.round(player.horizontalPosition - sheet.frameWidth / 2),
-      Math.round(player.verticalPosition - bands.legsBottom),
-      player.facing === "left",
-      stratum.inkColour
+      player.facing,
+      Math.round(player.horizontalPosition - LPC_FRAME_SIZE / 2),
+      Math.round(player.verticalPosition - LPC_GROUND_OFFSET_PIXELS)
     );
   }
 
@@ -428,14 +418,8 @@ export function runCombatLoop(
         tryToLeaveRoom();
       }
 
-      const framesPerSecond =
-        player.activity === "attacking"
-          ? ATTACK_FRAMES_PER_SECOND
-          : player.activity === "walking"
-            ? WALKING_FRAMES_PER_SECOND
-            : STANDING_FRAMES_PER_SECOND;
-
-      advanceAnimation(secondsElapsed, framesPerSecond);
+      const currentAnimation = findAnimationForPlayer(player.activity, player.weaponStyle);
+      advanceAnimation(secondsElapsed, LPC_FRAMES_PER_SECOND[currentAnimation]);
     }
 
     if (!isRunning) {
