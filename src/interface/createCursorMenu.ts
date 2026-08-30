@@ -1,4 +1,5 @@
 import type { MenuController, MenuEntry } from "../types/menu";
+import { findSoundEngine } from "../audio/sharedSoundEngine";
 
 const CURSOR_SYMBOL = "▶";
 
@@ -10,6 +11,7 @@ export function createCursorMenu(entries: MenuEntry[]): MenuController {
   const list = document.createElement("ul");
   list.className = "menu-list";
 
+  const sound = findSoundEngine();
   const rows: HTMLLIElement[] = [];
   let selectedIndex = 0;
 
@@ -22,6 +24,13 @@ export function createCursorMenu(entries: MenuEntry[]): MenuController {
   function moveSelection(step: number): void {
     selectedIndex = (selectedIndex + step + entries.length) % entries.length;
     highlightSelectedRow();
+    sound.play("menuMove");
+  }
+
+  function chooseEntry(entry: MenuEntry): void {
+    sound.resumeAfterUserAction();
+    sound.play("menuChoose");
+    entry.onChoose();
   }
 
   entries.forEach((entry, entryIndex) => {
@@ -37,7 +46,7 @@ export function createCursorMenu(entries: MenuEntry[]): MenuController {
     button.className = "menu-button";
     button.type = "button";
     button.textContent = entry.label;
-    button.addEventListener("click", entry.onChoose);
+    button.addEventListener("click", () => chooseEntry(entry));
     button.addEventListener("mouseenter", () => {
       selectedIndex = entryIndex;
       highlightSelectedRow();
@@ -63,7 +72,7 @@ export function createCursorMenu(entries: MenuEntry[]): MenuController {
 
     if (KEYS_THAT_CHOOSE.includes(event.key)) {
       event.preventDefault();
-      entries[selectedIndex].onChoose();
+      chooseEntry(entries[selectedIndex]);
     }
   }
 
