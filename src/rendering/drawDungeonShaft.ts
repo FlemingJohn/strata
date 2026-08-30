@@ -10,16 +10,19 @@ import {
   YEAR_MARKER_INSET_TILES
 } from "../constants/backgroundSettings";
 import {
-  FLOOR_TILE_COLUMN,
-  FLOOR_TILE_ROW,
+  FLOOR_TILE_VARIANTS,
   TILE_SIZE,
-  WALL_TILE_COLUMN,
-  WALL_TILE_ROW
+  WALL_TILE_VARIANTS
 } from "../constants/tilesetSettings";
 import { STRATUM_SETTINGS } from "../constants/stratumSettings";
 
 const GROUND_COLOUR = "#14110F";
 const LABEL_COLOUR = "#EDE4D8";
+
+function chooseVariantIndex(column: number, row: number, variantCount: number): number {
+  const scrambled = Math.imul(column + 1, 73856093) ^ Math.imul(row + 1, 19349663);
+  return Math.abs(scrambled) % variantCount;
+}
 
 function wrapIndex(value: number, length: number): number {
   return ((value % length) + length) % length;
@@ -94,20 +97,24 @@ export function drawDungeonShaft(
       const destinationLeft = column * TILE_SIZE;
 
       if (isWallTile(column, worldRow, columnCount)) {
+        const wallVariant =
+          WALL_TILE_VARIANTS[chooseVariantIndex(column, worldRow, WALL_TILE_VARIANTS.length)];
         drawTile(
           context,
           sheets.wallSheet,
-          WALL_TILE_COLUMN,
-          WALL_TILE_ROW,
+          wallVariant.column,
+          wallVariant.row,
           destinationLeft,
           destinationTop
         );
       } else {
+        const floorVariant =
+          FLOOR_TILE_VARIANTS[chooseVariantIndex(column, worldRow, FLOOR_TILE_VARIANTS.length)];
         drawTile(
           context,
           sheets.floorSheet,
-          FLOOR_TILE_COLUMN,
-          FLOOR_TILE_ROW,
+          floorVariant.column,
+          floorVariant.row,
           destinationLeft,
           destinationTop
         );
