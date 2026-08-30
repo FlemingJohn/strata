@@ -1,6 +1,8 @@
 import { createCursorMenu } from "./createCursorMenu";
 import { showProvingScreen } from "./showProvingScreen";
 import { loadLpcCharacter } from "../rendering/loadLpcCharacter";
+import { chooseAppearanceFromAddress } from "../game/chooseAppearanceFromAddress";
+import { DEMO_WALLET_ADDRESS } from "../constants/characterAppearance";
 import { drawLpcCharacter } from "../rendering/drawLpcCharacter";
 import { startDungeonBackground } from "../rendering/startDungeonBackground";
 import {
@@ -53,7 +55,7 @@ function createStandingHero(): HTMLCanvasElement {
 
   context.imageSmoothingEnabled = false;
 
-  loadLpcCharacter()
+  loadLpcCharacter(chooseAppearanceFromAddress(DEMO_WALLET_ADDRESS))
     .then((sheets) => {
       const sheet = sheets.idle;
       let frameIndex = 0;
