@@ -32,7 +32,7 @@ export function showCombatScreen(
 
   const controls = document.createElement("p");
   controls.className = "data-text";
-  controls.textContent = "wasd move · j attack · k roll";
+  controls.textContent = "wasd move · j attack · k roll · m mute";
 
   wrapper.append(status, canvas, controls);
   container.append(wrapper);
