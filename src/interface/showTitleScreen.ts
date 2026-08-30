@@ -9,6 +9,7 @@ import {
   TITLE_SCREEN_HERO_FRAMES_PER_SECOND,
   TITLE_SCREEN_HERO_SCALE
 } from "../constants/spriteSheetPaths";
+import { DEFAULT_TUNIC_COLOUR } from "../constants/heroClothingSettings";
 
 function createBackgroundCanvas(): HTMLCanvasElement {
   const existingCanvas = document.querySelector<HTMLCanvasElement>(".background-canvas");
@@ -49,7 +50,8 @@ function createStandingHero(): HTMLCanvasElement {
         spriteSheet,
         TITLE_SCREEN_HERO_FRAMES_PER_SECOND,
         TITLE_SCREEN_HERO_SCALE,
-        HERO_BODY_CROP_REGION
+        HERO_BODY_CROP_REGION,
+        DEFAULT_TUNIC_COLOUR
       );
     })
     .catch(() => {
