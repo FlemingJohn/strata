@@ -4,8 +4,8 @@ export const FLOOR_GRID_ROWS = 5;
 export const MINIMUM_ROOMS_PER_FLOOR = 6;
 export const MAXIMUM_ROOMS_PER_FLOOR = 12;
 
-export const ROOM_TILE_COLUMNS = 20;
-export const ROOM_TILE_ROWS = 15;
+export const ROOM_TILE_COLUMNS = 28;
+export const ROOM_TILE_ROWS = 16;
 
 export const MINIMUM_ENEMIES_PER_ROOM = 2;
 export const MAXIMUM_ENEMIES_PER_ROOM = 8;
