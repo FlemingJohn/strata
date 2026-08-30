@@ -60,33 +60,34 @@ export async function loadHeroSprites(): Promise<HeroSprites> {
   };
 }
 
-export function findSheetForPlayer(
-  sprites: HeroSprites,
+export type HeroSheetName = keyof HeroSprites;
+
+export function findSheetNameForPlayer(
   activity: string,
   facing: string,
   weaponStyle: string
-): SpriteSheet {
+): HeroSheetName {
   if (activity === "attacking") {
     if (weaponStyle === "crush") {
-      return sprites.crushing;
+      return "crushing";
     }
 
     if (weaponStyle === "pierce") {
-      return sprites.piercing;
+      return "piercing";
     }
 
-    return sprites.slicing;
+    return "slicing";
   }
 
   const isMoving = activity === "walking" || activity === "rolling";
 
   if (facing === "up") {
-    return isMoving ? sprites.walkingUp : sprites.standingUp;
+    return isMoving ? "walkingUp" : "standingUp";
   }
 
   if (facing === "left" || facing === "right") {
-    return isMoving ? sprites.walkingSide : sprites.standingSide;
+    return isMoving ? "walkingSide" : "standingSide";
   }
 
-  return isMoving ? sprites.walkingDown : sprites.standingDown;
+  return isMoving ? "walkingDown" : "standingDown";
 }
