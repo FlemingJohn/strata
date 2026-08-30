@@ -2,7 +2,7 @@ import { createCursorMenu } from "./createCursorMenu";
 import { showProvingScreen } from "./showProvingScreen";
 import { loadSpriteSheet } from "../rendering/loadSpriteSheet";
 import { playSpriteAnimation } from "../rendering/playSpriteAnimation";
-import { startStrataBackground } from "../rendering/startStrataBackground";
+import { startDungeonBackground } from "../rendering/startDungeonBackground";
 import {
   HERO_BODY_CROP_REGION,
   HERO_STANDING_DOWN_PATH,
@@ -77,7 +77,7 @@ function createWorldStatusStrip(): HTMLElement {
 
 export function showTitleScreen(container: HTMLElement): void {
   container.replaceChildren();
-  startStrataBackground(createBackgroundCanvas());
+  startDungeonBackground(createBackgroundCanvas());
 
   const panel = document.createElement("section");
   panel.className = "screen-panel title-screen-panel";
