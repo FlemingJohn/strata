@@ -19,6 +19,7 @@ import {
 } from "./createImpactFeedback";
 import { drawCombatHud } from "../rendering/drawCombatHud";
 import { drawEnemies, drawParticles, drawProjectiles } from "../rendering/drawEnemies";
+import type { Ember, FirePlacement } from "../types/fire";
 import type { TorchPlacement } from "../types/lighting";
 import { LPC_FRAME_SIZE, LPC_FRAMES_PER_SECOND, LPC_GROUND_OFFSET_PIXELS } from "../constants/lpcCharacterSettings";
 import { PLAYER_LIGHT_RADIUS_PIXELS } from "../constants/lightingSettings";
@@ -44,7 +45,16 @@ import { resolveAttackHits } from "./resolveAttackHits";
 import { spawnEnemiesForRoom } from "./createEnemy";
 import { applyDamageToPlayer, updatePlayer } from "./updatePlayer";
 import { findSoundEngine } from "../audio/sharedSoundEngine";
+import { findAreaTheme } from "../constants/areaThemes";
 import { findStratumForBlock } from "./findStratumForBlock";
+import { placeFires } from "./placeFires";
+import { drawEmbers, drawFireSprites, updateEmbers } from "../rendering/drawFires";
+import {
+  FIRE_CONTACT_DAMAGE,
+  FIRE_CONTACT_RADIUS_PIXELS,
+  FIRE_FRAMES_PER_SECOND,
+  FIRE_LIGHT_RADIUS_PIXELS
+} from "../constants/fireSettings";
 import { updateEnemies, updateProjectiles } from "./updateEnemies";
 
 export interface CombatLoopController {
@@ -87,7 +97,12 @@ export function runCombatLoop(
   let tileMap: RoomTileMap = generateRoomTiles(currentRoom, floor.description.layoutSeed);
   let enemies: EnemyCharacter[] = [];
   let torches: TorchPlacement[] = placeTorches(tileMap);
+  let fires: FirePlacement[] = [];
+  const embers: Ember[] = [];
+  let theme = findAreaTheme(stratum.stratumNumber, currentRoom.purpose === "boss");
   let elapsedSeconds = 0;
+  let fireFrameIndex = 0;
+  let secondsSinceFireFrame = 0;
 
   canvas.width = tileMap.columnCount * TILE_SIZE;
   canvas.height = tileMap.rowCount * TILE_SIZE;
@@ -132,6 +147,16 @@ export function runCombatLoop(
     currentRoom = room;
     tileMap = generateRoomTiles(currentRoom, floor.description.layoutSeed);
     torches = placeTorches(tileMap);
+    theme = findAreaTheme(stratum.stratumNumber, currentRoom.purpose === "boss");
+    embers.length = 0;
+    fires = theme.hasFires
+      ? placeFires(
+          tileMap,
+          createSeededRandomFromHash(
+            `${floor.description.layoutSeed}:${currentRoom.position.column}:${currentRoom.position.row}:fire`
+          )
+        )
+      : [];
     projectiles = [];
     particles.length = 0;
     spawnForCurrentRoom();
@@ -151,6 +176,39 @@ export function runCombatLoop(
     if (secondsSinceFrameChange >= secondsPerFrame) {
       secondsSinceFrameChange -= secondsPerFrame;
       animationFrameIndex += 1;
+    }
+  }
+
+  function applyFireContactDamage(): void {
+    for (const fire of fires) {
+      const distance = Math.hypot(
+        player.horizontalPosition - fire.horizontalPosition,
+        player.verticalPosition - fire.verticalPosition
+      );
+
+      if (distance > FIRE_CONTACT_RADIUS_PIXELS + player.collisionRadius) {
+        continue;
+      }
+
+      const wasBurned = applyDamageToPlayer(
+        player,
+        FIRE_CONTACT_DAMAGE,
+        fire.horizontalPosition,
+        fire.verticalPosition,
+        KNOCKBACK_SPEED_PIXELS_PER_SECOND
+      );
+
+      if (wasBurned) {
+        sound.play("playerHurt");
+        burstParticles(
+          particles,
+          player.horizontalPosition,
+          player.verticalPosition,
+          10,
+          "#FF7A2E",
+          140
+        );
+      }
     }
   }
 
@@ -304,7 +362,7 @@ export function runCombatLoop(
     }
 
     context.clearRect(-16, -16, canvas.width + 32, canvas.height + 32);
-    drawRoomTiles(context, tileMap, sheets, stratum.inkColour);
+    drawRoomTiles(context, tileMap, sheets, theme);
 
     if (currentRoom.purpose === "start" || currentRoom.purpose === "relic") {
       drawFloorSigil(
@@ -332,7 +390,21 @@ export function runCombatLoop(
     drawProjectiles(context, projectiles);
     drawParticles(context, particles);
 
+    if (fires.length > 0) {
+      drawFireSprites(context, sheets.fireSheet, sheets.smokeSheet, fires, fireFrameIndex);
+    }
+
     const lights = buildTorchLights(torches, elapsedSeconds);
+
+    for (const fire of fires) {
+      const flicker = 1 + Math.sin(elapsedSeconds * 7 + fire.flickerPhase) * 0.14;
+      lights.push({
+        horizontalPosition: fire.horizontalPosition,
+        verticalPosition: fire.verticalPosition - 8,
+        radiusInPixels: FIRE_LIGHT_RADIUS_PIXELS * flicker,
+        flickerPhase: fire.flickerPhase
+      });
+    }
     lights.push({
       horizontalPosition: player.horizontalPosition,
       verticalPosition: player.verticalPosition,
@@ -342,6 +414,7 @@ export function runCombatLoop(
 
     drawDarknessWithLights(context, canvas.width, canvas.height, lights);
     drawTorchCores(context, torches, elapsedSeconds);
+    drawEmbers(context, embers);
     drawRoomEdgeShadow(context, canvas.width, canvas.height);
     context.restore();
 
@@ -367,6 +440,14 @@ export function runCombatLoop(
       : 0;
     previousTimestamp = timestamp;
     elapsedSeconds += secondsElapsed;
+    secondsSinceFireFrame += secondsElapsed;
+
+    if (secondsSinceFireFrame >= 1 / FIRE_FRAMES_PER_SECOND) {
+      secondsSinceFireFrame -= 1 / FIRE_FRAMES_PER_SECOND;
+      fireFrameIndex += 1;
+    }
+
+    updateEmbers(embers, fires, secondsElapsed);
     secondsUntilExitAllowed -= secondsElapsed;
 
     if (feedback.secondsOfHitStopRemaining > 0) {
@@ -411,6 +492,7 @@ export function runCombatLoop(
       }
       applyEnemyContactDamage();
       applyProjectileDamage();
+      applyFireContactDamage();
       updateParticles(particles, secondsElapsed);
 
       if (enemies.length === 0) {
@@ -441,6 +523,14 @@ export function runCombatLoop(
 
   sound.resumeAfterUserAction();
   sound.startDrone();
+  fires = theme.hasFires
+    ? placeFires(
+        tileMap,
+        createSeededRandomFromHash(
+          `${floor.description.layoutSeed}:${currentRoom.position.column}:${currentRoom.position.row}:fire`
+        )
+      )
+    : [];
   spawnForCurrentRoom();
   handlers.onRoomEntered(currentRoom, countClearedRooms());
   animationHandle = window.requestAnimationFrame(renderFrame);
