@@ -3,7 +3,10 @@ import type { EquippedRelic } from "../types/relic";
 import { createCursorMenu } from "./createCursorMenu";
 import { showTitleScreen } from "./showTitleScreen";
 
+export type RunOutcome = "died" | "floorCleared";
+
 export interface RunSummary {
+  outcome: RunOutcome;
   roomsCleared: number;
   kills: number;
   deepestBlockNumber: number;
@@ -35,9 +38,11 @@ export function showDeathScreen(
   const panel = document.createElement("section");
   panel.className = "screen-panel";
 
+  const survived = summary.outcome === "floorCleared";
+
   const heading = document.createElement("h2");
-  heading.className = "death-heading";
-  heading.textContent = "BURIED";
+  heading.className = survived ? "death-heading death-heading-survived" : "death-heading";
+  heading.textContent = survived ? "FLOOR CLEARED" : "BURIED";
 
   const facts = document.createElement("div");
   facts.className = "floor-facts";
