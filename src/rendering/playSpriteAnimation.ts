@@ -11,7 +11,8 @@ export function playSpriteAnimation(
   framesPerSecond: number,
   displayScale: number,
   cropRegion?: SpriteCropRegion,
-  tunicColour?: string
+  tunicColour?: string,
+  sheetName?: string
 ): SpriteAnimationController {
   const context = canvas.getContext("2d");
 
@@ -47,7 +48,16 @@ export function playSpriteAnimation(
     if (tunicColour) {
       context.save();
       context.translate(-visibleRegion.left, -visibleRegion.top);
-      drawClothedHero(context, spriteSheet, currentFrameIndex, 0, 0, false, tunicColour);
+      drawClothedHero(
+        context,
+        spriteSheet,
+        sheetName ?? "standingDown",
+        currentFrameIndex,
+        0,
+        0,
+        false,
+        tunicColour
+      );
       context.restore();
       return;
     }
