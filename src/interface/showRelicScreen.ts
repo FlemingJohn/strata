@@ -1,5 +1,6 @@
 import type { EquippedRelic } from "../types/relic";
 import { createRelicCard } from "./createRelicCard";
+import { findSoundEngine } from "../audio/sharedSoundEngine";
 import { createCursorMenu } from "./createCursorMenu";
 import { showLoadoutScreen } from "./showLoadoutScreen";
 
@@ -20,6 +21,7 @@ export function showRelicScreen(container: HTMLElement, relics: EquippedRelic[])
   const grid = document.createElement("div");
   grid.className = "relic-grid";
   grid.append(...relics.map(createRelicCard));
+  findSoundEngine().play("relicFound");
 
   const menu = createCursorMenu([
     {
