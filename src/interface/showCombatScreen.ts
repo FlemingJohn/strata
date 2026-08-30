@@ -18,10 +18,6 @@ export function showCombatScreen(
   container.replaceChildren();
 
   const startRoom = floor.rooms.find((room) => room.purpose === "start") ?? floor.rooms[0];
-  const combatRoom =
-    floor.rooms.find((room) => room.purpose === "combat" && room.enemyNames.length > 0) ??
-    startRoom;
-
   const wrapper = document.createElement("div");
   wrapper.className = "combat-wrapper";
 
@@ -52,14 +48,22 @@ export function showCombatScreen(
 
   Promise.all([loadTileSheets(), loadHeroSprites(), loadEnemySprites()])
     .then(([sheets, heroSprites, enemySprites]) => {
-      status.textContent = `${combatRoom.enemyNames.length} hostile · ${player.weaponStyle}`;
-
-      runCombatLoop(canvas, player, floor, combatRoom, sheets, heroSprites, enemySprites, {
-        onRoomCleared: () => {
-          status.textContent = "room clear";
+      runCombatLoop(canvas, player, floor, startRoom, sheets, heroSprites, enemySprites, {
+        onRoomEntered: (room, clearedCount) => {
+          status.textContent =
+            `${room.purpose} room · ${clearedCount} of ${floor.rooms.length} cleared`;
+        },
+        onFloorCompleted: (clearedCount, kills) => {
+          showDeathScreen(container, floor, relics, {
+            outcome: "floorCleared",
+            roomsCleared: clearedCount,
+            kills,
+            deepestBlockNumber: deepestRelic ? deepestRelic.sourceBlockNumber : 0
+          });
         },
         onPlayerDied: (roomsCleared, kills) => {
           showDeathScreen(container, floor, relics, {
+            outcome: "died",
             roomsCleared,
             kills,
             deepestBlockNumber: deepestRelic ? deepestRelic.sourceBlockNumber : 0
