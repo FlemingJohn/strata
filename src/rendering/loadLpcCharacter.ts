@@ -1,10 +1,10 @@
 import type { DirectionalSpriteSheet, LpcCharacterSheets } from "../types/lpcCharacter";
+import type { CharacterAppearance } from "../game/chooseAppearanceFromAddress";
 import type { LpcAnimationName } from "../constants/lpcCharacterSettings";
 import {
   LPC_ANIMATIONS,
   LPC_FOLDER,
-  LPC_FRAME_SIZE,
-  LPC_LAYER_ORDER
+  LPC_FRAME_SIZE
 } from "../constants/lpcCharacterSettings";
 
 function loadImage(path: string): Promise<HTMLImageElement | null> {
@@ -16,11 +16,24 @@ function loadImage(path: string): Promise<HTMLImageElement | null> {
   });
 }
 
+function findLayerFolders(appearance: CharacterAppearance): string[] {
+  return [
+    "body",
+    appearance.head.folderName,
+    "legs",
+    "feet",
+    appearance.torso.folderName,
+    appearance.headgear.folderName
+  ];
+}
+
 async function buildOneAnimation(
-  animationName: LpcAnimationName
+  animationName: LpcAnimationName,
+  appearance: CharacterAppearance
 ): Promise<DirectionalSpriteSheet | null> {
+  const folders = findLayerFolders(appearance);
   const layerImages = await Promise.all(
-    LPC_LAYER_ORDER.map((layerName) => loadImage(`${LPC_FOLDER}/${layerName}/${animationName}.png`))
+    folders.map((layerName) => loadImage(`${LPC_FOLDER}/${layerName}/${animationName}.png`))
   );
 
   const firstLoaded = layerImages.find((image) => image !== null);
@@ -55,8 +68,12 @@ async function buildOneAnimation(
   };
 }
 
-export async function loadLpcCharacter(): Promise<LpcCharacterSheets> {
-  const builtSheets = await Promise.all(LPC_ANIMATIONS.map(buildOneAnimation));
+export async function loadLpcCharacter(
+  appearance: CharacterAppearance
+): Promise<LpcCharacterSheets> {
+  const builtSheets = await Promise.all(
+    LPC_ANIMATIONS.map((animationName) => buildOneAnimation(animationName, appearance))
+  );
   const sheets = {} as LpcCharacterSheets;
 
   LPC_ANIMATIONS.forEach((animationName, index) => {
