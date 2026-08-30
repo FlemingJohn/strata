@@ -1,0 +1,139 @@
+import type { TileSheets } from "./loadTileSheets";
+import {
+  DOORWAY_WIDTH_TILES,
+  LEVEL_DIVIDER_EVERY_ROWS,
+  ROWS_PER_STRATUM,
+  SHAFT_WALL_COLUMNS,
+  STRATUM_TINT_OPACITY,
+  YEAR_LABEL_FONT,
+  YEAR_LABEL_OPACITY,
+  YEAR_MARKER_INSET_TILES
+} from "../constants/backgroundSettings";
+import {
+  FLOOR_TILE_COLUMN,
+  FLOOR_TILE_ROW,
+  TILE_SIZE,
+  WALL_TILE_COLUMN,
+  WALL_TILE_ROW
+} from "../constants/tilesetSettings";
+import { STRATUM_SETTINGS } from "../constants/stratumSettings";
+
+const GROUND_COLOUR = "#14110F";
+const LABEL_COLOUR = "#EDE4D8";
+
+function wrapIndex(value: number, length: number): number {
+  return ((value % length) + length) % length;
+}
+
+function findStratumForRow(worldRow: number) {
+  const bandIndex = Math.floor(worldRow / ROWS_PER_STRATUM);
+  return STRATUM_SETTINGS[wrapIndex(bandIndex, STRATUM_SETTINGS.length)];
+}
+
+function isDoorwayGap(worldColumn: number, columnCount: number): boolean {
+  const middleColumn = Math.floor(columnCount / 2);
+  const halfWidth = Math.floor(DOORWAY_WIDTH_TILES / 2);
+  return worldColumn >= middleColumn - halfWidth && worldColumn < middleColumn + halfWidth;
+}
+
+function isWallTile(worldColumn: number, worldRow: number, columnCount: number): boolean {
+  const isShaftEdge =
+    worldColumn < SHAFT_WALL_COLUMNS || worldColumn >= columnCount - SHAFT_WALL_COLUMNS;
+
+  if (isShaftEdge) {
+    return true;
+  }
+
+  const isLevelDivider = wrapIndex(worldRow, LEVEL_DIVIDER_EVERY_ROWS) === 0;
+
+  return isLevelDivider && !isDoorwayGap(worldColumn, columnCount);
+}
+
+function drawTile(
+  context: CanvasRenderingContext2D,
+  sheet: HTMLImageElement,
+  sheetColumn: number,
+  sheetRow: number,
+  destinationLeft: number,
+  destinationTop: number
+): void {
+  context.drawImage(
+    sheet,
+    sheetColumn * TILE_SIZE,
+    sheetRow * TILE_SIZE,
+    TILE_SIZE,
+    TILE_SIZE,
+    destinationLeft,
+    destinationTop,
+    TILE_SIZE,
+    TILE_SIZE
+  );
+}
+
+export function drawDungeonShaft(
+  context: CanvasRenderingContext2D,
+  canvasWidth: number,
+  canvasHeight: number,
+  scrollOffsetPixels: number,
+  sheets: TileSheets
+): void {
+  context.fillStyle = GROUND_COLOUR;
+  context.fillRect(0, 0, canvasWidth, canvasHeight);
+
+  const columnCount = Math.ceil(canvasWidth / TILE_SIZE) + 1;
+  const rowCount = Math.ceil(canvasHeight / TILE_SIZE) + 2;
+  const pixelsScrolledWithinTile = scrollOffsetPixels % TILE_SIZE;
+  const rowsAlreadyPassed = Math.floor(scrollOffsetPixels / TILE_SIZE);
+
+  for (let visibleRow = -1; visibleRow < rowCount; visibleRow++) {
+    const worldRow = visibleRow + rowsAlreadyPassed;
+    const destinationTop = visibleRow * TILE_SIZE - pixelsScrolledWithinTile;
+    const stratum = findStratumForRow(worldRow);
+
+    for (let column = 0; column < columnCount; column++) {
+      const destinationLeft = column * TILE_SIZE;
+
+      if (isWallTile(column, worldRow, columnCount)) {
+        drawTile(
+          context,
+          sheets.wallSheet,
+          WALL_TILE_COLUMN,
+          WALL_TILE_ROW,
+          destinationLeft,
+          destinationTop
+        );
+      } else {
+        drawTile(
+          context,
+          sheets.floorSheet,
+          FLOOR_TILE_COLUMN,
+          FLOOR_TILE_ROW,
+          destinationLeft,
+          destinationTop
+        );
+      }
+    }
+
+    context.globalAlpha = STRATUM_TINT_OPACITY;
+    context.fillStyle = stratum.inkColour;
+    context.fillRect(0, destinationTop, canvasWidth, TILE_SIZE);
+    context.globalAlpha = 1;
+
+    if (wrapIndex(worldRow, ROWS_PER_STRATUM) === 0) {
+      context.globalAlpha = YEAR_LABEL_OPACITY;
+      context.fillStyle = LABEL_COLOUR;
+      context.font = YEAR_LABEL_FONT;
+      context.fillText(
+        String(stratum.approximateYear),
+        YEAR_MARKER_INSET_TILES * TILE_SIZE,
+        destinationTop + TILE_SIZE - 5
+      );
+      context.fillText(
+        stratum.displayName.toUpperCase(),
+        canvasWidth - YEAR_MARKER_INSET_TILES * TILE_SIZE - 40,
+        destinationTop + TILE_SIZE - 5
+      );
+      context.globalAlpha = 1;
+    }
+  }
+}
