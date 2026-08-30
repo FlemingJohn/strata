@@ -20,7 +20,16 @@ import {
 } from "./createImpactFeedback";
 import { drawCombatHud } from "../rendering/drawCombatHud";
 import { drawEnemies, drawParticles, drawProjectiles } from "../rendering/drawEnemies";
+import type { TorchPlacement } from "../types/lighting";
+import { PLAYER_LIGHT_RADIUS_PIXELS } from "../constants/lightingSettings";
 import { drawEntityShadow } from "../rendering/drawEntityShadow";
+import { drawFloorSigil } from "../rendering/drawFloorSigil";
+import {
+  buildTorchLights,
+  drawDarknessWithLights,
+  drawTorchCores
+} from "../rendering/drawTorchLight";
+import { placeTorches } from "./placeTorches";
 import { drawRoomEdgeShadow } from "../rendering/drawRoomEdgeShadow";
 import { drawRoomTiles } from "../rendering/drawRoomTiles";
 import { drawSpriteFrame } from "../rendering/drawSpriteFrame";
@@ -80,6 +89,8 @@ export function runCombatLoop(
   let currentRoom: DungeonRoom = startRoom;
   let tileMap: RoomTileMap = generateRoomTiles(currentRoom, floor.description.layoutSeed);
   let enemies: EnemyCharacter[] = [];
+  let torches: TorchPlacement[] = placeTorches(tileMap);
+  let elapsedSeconds = 0;
 
   canvas.width = tileMap.columnCount * TILE_SIZE;
   canvas.height = tileMap.rowCount * TILE_SIZE;
@@ -123,6 +134,7 @@ export function runCombatLoop(
   function enterRoom(room: DungeonRoom, cameFrom: ExitDirection | null): void {
     currentRoom = room;
     tileMap = generateRoomTiles(currentRoom, floor.description.layoutSeed);
+    torches = placeTorches(tileMap);
     projectiles = [];
     particles.length = 0;
     spawnForCurrentRoom();
@@ -300,6 +312,17 @@ export function runCombatLoop(
     context.clearRect(-16, -16, canvas.width + 32, canvas.height + 32);
     drawRoomTiles(context, tileMap, sheets, stratum.inkColour);
 
+    if (currentRoom.purpose === "start" || currentRoom.purpose === "relic") {
+      drawFloorSigil(
+        context,
+        canvas.width / 2,
+        canvas.height / 2,
+        floor.description.layoutSeed,
+        stratum.inkColour,
+        elapsedSeconds
+      );
+    }
+
     for (const enemy of enemies) {
       drawEntityShadow(
         context,
@@ -314,6 +337,17 @@ export function runCombatLoop(
     drawPlayer();
     drawProjectiles(context, projectiles);
     drawParticles(context, particles);
+
+    const lights = buildTorchLights(torches, elapsedSeconds);
+    lights.push({
+      horizontalPosition: player.horizontalPosition,
+      verticalPosition: player.verticalPosition,
+      radiusInPixels: PLAYER_LIGHT_RADIUS_PIXELS,
+      flickerPhase: 0
+    });
+
+    drawDarknessWithLights(context, canvas.width, canvas.height, lights);
+    drawTorchCores(context, torches, elapsedSeconds);
     drawRoomEdgeShadow(context, canvas.width, canvas.height);
     context.restore();
 
@@ -338,6 +372,7 @@ export function runCombatLoop(
       ? Math.min(0.05, (timestamp - previousTimestamp) / 1000)
       : 0;
     previousTimestamp = timestamp;
+    elapsedSeconds += secondsElapsed;
     secondsUntilExitAllowed -= secondsElapsed;
 
     if (feedback.secondsOfHitStopRemaining > 0) {
