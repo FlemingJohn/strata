@@ -2,11 +2,13 @@ import type { CombatParticle } from "../types/combat";
 import type { DungeonFloor, DungeonRoom, RoomTileMap } from "../types/dungeon";
 import type { EnemyCharacter, Projectile } from "../types/enemy";
 import type { EnemySpriteLibrary } from "../rendering/loadEnemySprites";
+import type { ExitDirection } from "./findAdjacentRoom";
 import type { HeroSprites } from "../rendering/loadHeroSprites";
 import type { PlayerCharacter } from "../types/player";
 import type { TileSheets } from "../rendering/loadTileSheets";
 import { HERO_GROUND_OFFSET_PIXELS } from "../constants/enemySpritePaths";
 import { KNOCKBACK_SPEED_PIXELS_PER_SECOND } from "../constants/animationSettings";
+import { HEALTH_RESTORED_ON_ROOM_CLEARED } from "../constants/playerSettings";
 import { TILE_SIZE } from "../constants/tilesetSettings";
 import { createInputReader } from "./createInputReader";
 import { createSeededRandomFromHash } from "./createSeededRandomFromHash";
@@ -20,6 +22,11 @@ import { drawCombatHud } from "../rendering/drawCombatHud";
 import { drawEnemies, drawParticles, drawProjectiles } from "../rendering/drawEnemies";
 import { drawRoomTiles } from "../rendering/drawRoomTiles";
 import { drawSpriteFrame } from "../rendering/drawSpriteFrame";
+import {
+  findExitBeingUsed,
+  findRoomInDirection,
+  placePlayerAtOppositeDoor
+} from "./findAdjacentRoom";
 import { findSheetForPlayer } from "../rendering/loadHeroSprites";
 import { generateRoomTiles } from "./generateRoomTiles";
 import { resolveAttackHits } from "./resolveAttackHits";
@@ -33,12 +40,14 @@ export interface CombatLoopController {
 
 export interface CombatLoopHandlers {
   onPlayerDied: (roomsCleared: number, kills: number) => void;
-  onRoomCleared: (roomsCleared: number) => void;
+  onRoomEntered: (room: DungeonRoom, roomsCleared: number) => void;
+  onFloorCompleted: (roomsCleared: number, kills: number) => void;
 }
 
 const WALKING_FRAMES_PER_SECOND = 10;
 const STANDING_FRAMES_PER_SECOND = 6;
 const ATTACK_FRAMES_PER_SECOND = 14;
+const SECONDS_BLOCKING_REENTRY = 0.4;
 
 export function runCombatLoop(
   canvas: HTMLCanvasElement,
@@ -56,37 +65,69 @@ export function runCombatLoop(
     throw new Error("The combat canvas does not support two dimensional drawing");
   }
 
-  const tileMap: RoomTileMap = generateRoomTiles(startRoom, floor.description.layoutSeed);
+  const respectsReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const inputReader = createInputReader();
+  const feedback = createImpactFeedback();
+  const particles: CombatParticle[] = [];
+  let projectiles: Projectile[] = [];
+
+  let currentRoom: DungeonRoom = startRoom;
+  let tileMap: RoomTileMap = generateRoomTiles(currentRoom, floor.description.layoutSeed);
+  let enemies: EnemyCharacter[] = [];
 
   canvas.width = tileMap.columnCount * TILE_SIZE;
   canvas.height = tileMap.rowCount * TILE_SIZE;
   context.imageSmoothingEnabled = false;
 
-  const respectsReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const inputReader = createInputReader();
-  const feedback = createImpactFeedback();
-  const particles: CombatParticle[] = [];
-  const projectiles: Projectile[] = [];
-
-  const nextRandomNumber = createSeededRandomFromHash(
-    `${floor.description.layoutSeed}:${startRoom.position.column}:${startRoom.position.row}:spawn`
-  );
-
-  const enemies: EnemyCharacter[] = spawnEnemiesForRoom(
-    startRoom.enemyNames,
-    tileMap,
-    floor.description.difficultyMultiplier,
-    nextRandomNumber
-  );
-
   let roomsCleared = 0;
   let totalKills = 0;
-  let hasReportedClear = enemies.length === 0;
+  let secondsUntilExitAllowed = SECONDS_BLOCKING_REENTRY;
   let animationFrameIndex = 0;
   let secondsSinceFrameChange = 0;
   let previousTimestamp = 0;
   let animationHandle = 0;
   let isRunning = true;
+
+  function countClearedRooms(): number {
+    return floor.rooms.filter((room) => room.hasBeenCleared).length;
+  }
+
+  function spawnForCurrentRoom(): void {
+    if (currentRoom.hasBeenCleared) {
+      enemies = [];
+      return;
+    }
+
+    const nextRandomNumber = createSeededRandomFromHash(
+      `${floor.description.layoutSeed}:${currentRoom.position.column}:${currentRoom.position.row}:spawn`
+    );
+
+    enemies = spawnEnemiesForRoom(
+      currentRoom.enemyNames,
+      tileMap,
+      floor.description.difficultyMultiplier,
+      nextRandomNumber
+    );
+
+    if (enemies.length === 0) {
+      currentRoom.hasBeenCleared = true;
+    }
+  }
+
+  function enterRoom(room: DungeonRoom, cameFrom: ExitDirection | null): void {
+    currentRoom = room;
+    tileMap = generateRoomTiles(currentRoom, floor.description.layoutSeed);
+    projectiles = [];
+    particles.length = 0;
+    spawnForCurrentRoom();
+
+    if (cameFrom) {
+      placePlayerAtOppositeDoor(player, tileMap, cameFrom);
+    }
+
+    secondsUntilExitAllowed = SECONDS_BLOCKING_REENTRY;
+    handlers.onRoomEntered(currentRoom, countClearedRooms());
+  }
 
   function advanceAnimation(secondsElapsed: number, framesPerSecond: number): void {
     secondsSinceFrameChange += secondsElapsed;
@@ -172,6 +213,46 @@ export function runCombatLoop(
     }
   }
 
+  function grantRoomClearedReward(): void {
+    if (currentRoom.hasBeenCleared) {
+      return;
+    }
+
+    currentRoom.hasBeenCleared = true;
+    roomsCleared += 1;
+    player.currentHealth = Math.min(
+      player.maximumHealth,
+      player.currentHealth + HEALTH_RESTORED_ON_ROOM_CLEARED
+    );
+  }
+
+  function tryToLeaveRoom(): void {
+    if (enemies.length > 0 || secondsUntilExitAllowed > 0) {
+      return;
+    }
+
+    const direction = findExitBeingUsed(player, tileMap);
+
+    if (!direction) {
+      return;
+    }
+
+    if (currentRoom.purpose === "boss") {
+      isRunning = false;
+      inputReader.stopListening();
+      handlers.onFloorCompleted(countClearedRooms(), totalKills);
+      return;
+    }
+
+    const nextRoom = findRoomInDirection(floor, currentRoom, direction);
+
+    if (!nextRoom) {
+      return;
+    }
+
+    enterRoom(nextRoom, direction);
+  }
+
   function drawPlayer(): void {
     const sheet = findSheetForPlayer(
       heroSprites,
@@ -220,7 +301,9 @@ export function runCombatLoop(
       player,
       floor.description.floorNumber,
       floor.description.sourceBlockNumber,
-      enemies.length
+      enemies.length,
+      `${countClearedRooms()}/${floor.rooms.length}`,
+      currentRoom.purpose
     );
   }
 
@@ -233,6 +316,7 @@ export function runCombatLoop(
       ? Math.min(0.05, (timestamp - previousTimestamp) / 1000)
       : 0;
     previousTimestamp = timestamp;
+    secondsUntilExitAllowed -= secondsElapsed;
 
     if (feedback.secondsOfHitStopRemaining > 0) {
       feedback.secondsOfHitStopRemaining -= secondsElapsed;
@@ -253,6 +337,11 @@ export function runCombatLoop(
       applyProjectileDamage();
       updateParticles(particles, secondsElapsed);
 
+      if (enemies.length === 0) {
+        grantRoomClearedReward();
+        tryToLeaveRoom();
+      }
+
       const framesPerSecond =
         player.activity === "attacking"
           ? ATTACK_FRAMES_PER_SECOND
@@ -263,25 +352,25 @@ export function runCombatLoop(
       advanceAnimation(secondsElapsed, framesPerSecond);
     }
 
+    if (!isRunning) {
+      return;
+    }
+
     decayImpactFeedback(feedback, secondsElapsed);
     drawEverything();
-
-    if (!hasReportedClear && enemies.length === 0) {
-      hasReportedClear = true;
-      roomsCleared += 1;
-      handlers.onRoomCleared(roomsCleared);
-    }
 
     if (player.currentHealth <= 0) {
       isRunning = false;
       inputReader.stopListening();
-      handlers.onPlayerDied(roomsCleared, totalKills);
+      handlers.onPlayerDied(countClearedRooms(), totalKills);
       return;
     }
 
     animationHandle = window.requestAnimationFrame(renderFrame);
   }
 
+  spawnForCurrentRoom();
+  handlers.onRoomEntered(currentRoom, countClearedRooms());
   animationHandle = window.requestAnimationFrame(renderFrame);
 
   return {
