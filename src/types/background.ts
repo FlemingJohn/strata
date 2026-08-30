@@ -6,12 +6,6 @@ export interface DustMote {
   opacity: number;
 }
 
-export interface SedimentFleck {
-  horizontalRatio: number;
-  verticalRatio: number;
-  sizeInPixels: number;
-}
-
 export interface BackgroundController {
   stop: () => void;
 }
