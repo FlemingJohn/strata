@@ -3,6 +3,7 @@ export interface PlayerInput {
   vertical: number;
   wantsToAttack: boolean;
   wantsToRoll: boolean;
+  wantsToCast: boolean;
 }
 
 export interface InputReader {
