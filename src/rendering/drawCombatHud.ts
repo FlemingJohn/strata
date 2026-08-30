@@ -18,7 +18,9 @@ export function drawCombatHud(
   player: PlayerCharacter,
   floorNumber: number,
   sourceBlockNumber: number,
-  enemiesRemaining: number
+  enemiesRemaining: number,
+  roomProgress: string,
+  roomPurpose: string
 ): void {
   context.fillStyle = BACKDROP_COLOUR;
   context.fillRect(0, 0, canvasWidth, HUD_HEIGHT);
@@ -62,4 +64,12 @@ export function drawCombatHud(
 
   context.fillStyle = LABEL_COLOUR;
   context.fillText(player.weaponStyle.toUpperCase(), canvasWidth - 46, 19);
+
+  context.fillStyle = roomPurpose === "boss" ? HEALTH_COLOUR : LABEL_COLOUR;
+  context.fillText(`ROOM ${roomProgress}`, BAR_WIDTH + 90, 10);
+
+  if (enemiesRemaining === 0) {
+    context.fillStyle = HIGHLIGHT_COLOUR;
+    context.fillText("EXITS OPEN", BAR_WIDTH + 90, 19);
+  }
 }
