@@ -8,6 +8,8 @@ import { enterFullScreen, leaveFullScreen } from "./enterFullScreen";
 import { fitCanvasToViewport } from "../rendering/fitCanvasToViewport";
 import { loadEnemySprites } from "../rendering/loadEnemySprites";
 import { loadLpcCharacter } from "../rendering/loadLpcCharacter";
+import { chooseAppearanceFromAddress, describeAppearance } from "../game/chooseAppearanceFromAddress";
+import { DEMO_WALLET_ADDRESS } from "../constants/characterAppearance";
 import { loadTileSheets } from "../rendering/loadTileSheets";
 import { runCombatLoop } from "../game/runCombatLoop";
 import { showDeathScreen } from "./showDeathScreen";
@@ -18,7 +20,8 @@ const LOGICAL_HEIGHT = ROOM_TILE_ROWS * TILE_SIZE;
 export function showCombatScreen(
   container: HTMLElement,
   floor: DungeonFloor,
-  relics: EquippedRelic[]
+  relics: EquippedRelic[],
+  walletAddress: string = DEMO_WALLET_ADDRESS
 ): void {
   container.replaceChildren();
 
@@ -36,7 +39,7 @@ export function showCombatScreen(
 
   const controls = document.createElement("p");
   controls.className = "combat-controls";
-  controls.textContent = "wasd move · j attack · k roll · m mute · esc exit";
+  controls.textContent = "wasd move · j attack · k roll · l nova · m mute · esc exit";
 
   stage.append(canvas, status, controls);
   container.append(stage);
@@ -52,6 +55,7 @@ export function showCombatScreen(
   );
 
   const deepestRelic = findDeepestRelic(relics);
+  const appearance = chooseAppearanceFromAddress(walletAddress);
 
   function finishRun(outcome: "died" | "floorCleared", roomsCleared: number, kills: number): void {
     fitController.stop();
@@ -64,11 +68,13 @@ export function showCombatScreen(
     });
   }
 
-  Promise.all([loadTileSheets(), loadLpcCharacter(), loadEnemySprites()])
+  Promise.all([loadTileSheets(), loadLpcCharacter(appearance), loadEnemySprites()])
     .then(([sheets, heroSprites, enemySprites]) => {
       runCombatLoop(canvas, player, floor, startRoom, sheets, heroSprites, enemySprites, {
         onRoomEntered: (room, clearedCount) => {
-          status.textContent = `${room.purpose} · ${clearedCount} of ${floor.rooms.length} cleared`;
+          status.textContent =
+            `${room.purpose} · ${clearedCount} of ${floor.rooms.length} cleared · ` +
+            describeAppearance(appearance);
         },
         onFloorCompleted: (clearedCount, kills) => {
           finishRun("floorCleared", clearedCount, kills);
