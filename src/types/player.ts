@@ -1,7 +1,13 @@
 import type { AnimationPlayback, FacingDirection } from "./spriteSheet";
 import type { EquippedRelic } from "./relic";
 
-export type PlayerActivity = "standing" | "walking" | "attacking" | "rolling" | "dying";
+export type PlayerActivity =
+  | "standing"
+  | "walking"
+  | "attacking"
+  | "rolling"
+  | "casting"
+  | "dying";
 
 export type WeaponStyle = "slice" | "crush" | "pierce";
 
@@ -33,4 +39,5 @@ export interface PlayerCharacter {
   rollDirectionVertical: number;
 
   currentAttackIdentifier: number;
+  secondsUntilCastReady: number;
 }
