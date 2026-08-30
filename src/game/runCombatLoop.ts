@@ -6,7 +6,6 @@ import type { ExitDirection } from "./findAdjacentRoom";
 import type { HeroSprites } from "../rendering/loadHeroSprites";
 import type { PlayerCharacter } from "../types/player";
 import type { TileSheets } from "../rendering/loadTileSheets";
-import { HERO_GROUND_OFFSET_PIXELS } from "../constants/enemySpritePaths";
 import { KNOCKBACK_SPEED_PIXELS_PER_SECOND } from "../constants/animationSettings";
 import { HEALTH_RESTORED_ON_ROOM_CLEARED } from "../constants/playerSettings";
 import { TILE_SIZE } from "../constants/tilesetSettings";
@@ -38,7 +37,8 @@ import {
   findRoomInDirection,
   placePlayerAtOppositeDoor
 } from "./findAdjacentRoom";
-import { findSheetForPlayer } from "../rendering/loadHeroSprites";
+import { findSheetNameForPlayer } from "../rendering/loadHeroSprites";
+import { findBodyBands } from "../rendering/drawClothedHero";
 import { generateRoomTiles } from "./generateRoomTiles";
 import { resolveAttackHits } from "./resolveAttackHits";
 import { spawnEnemiesForRoom } from "./createEnemy";
@@ -276,12 +276,14 @@ export function runCombatLoop(
   }
 
   function drawPlayer(): void {
-    const sheet = findSheetForPlayer(
-      heroSprites,
+    const sheetName = findSheetNameForPlayer(
       player.activity,
       player.facing,
       player.weaponStyle
     );
+    const sheet = heroSprites[sheetName];
+    const frameIndex = animationFrameIndex % sheet.frameCount;
+    const bands = findBodyBands(sheetName, frameIndex);
     const isFlickering =
       player.secondsRemainingInvulnerable > 0 && Math.floor(performance.now() / 60) % 2 === 0;
 
@@ -292,9 +294,10 @@ export function runCombatLoop(
     drawClothedHero(
       context,
       sheet,
-      animationFrameIndex % sheet.frameCount,
+      sheetName,
+      frameIndex,
       Math.round(player.horizontalPosition - sheet.frameWidth / 2),
-      Math.round(player.verticalPosition - HERO_GROUND_OFFSET_PIXELS),
+      Math.round(player.verticalPosition - bands.legsBottom),
       player.facing === "left",
       stratum.inkColour
     );
