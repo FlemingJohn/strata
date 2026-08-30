@@ -1,12 +1,14 @@
 import type { DungeonFloor } from "../types/dungeon";
 import type { EquippedRelic } from "../types/relic";
 import { COMBAT_DISPLAY_SCALE, TILE_SIZE } from "../constants/tilesetSettings";
-import { chooseWeaponStyle } from "../game/chooseWeaponStyle";
+import { ROOM_TILE_COLUMNS, ROOM_TILE_ROWS } from "../constants/dungeonSettings";
+import { chooseWeaponStyle, findDeepestRelic } from "../game/chooseWeaponStyle";
 import { createPlayer } from "../game/createPlayer";
-import { generateRoomTiles } from "../game/generateRoomTiles";
+import { loadEnemySprites } from "../rendering/loadEnemySprites";
 import { loadHeroSprites } from "../rendering/loadHeroSprites";
 import { loadTileSheets } from "../rendering/loadTileSheets";
 import { runCombatLoop } from "../game/runCombatLoop";
+import { showDeathScreen } from "./showDeathScreen";
 
 export function showCombatScreen(
   container: HTMLElement,
@@ -16,19 +18,21 @@ export function showCombatScreen(
   container.replaceChildren();
 
   const startRoom = floor.rooms.find((room) => room.purpose === "start") ?? floor.rooms[0];
-  const tileMap = generateRoomTiles(startRoom, floor.description.layoutSeed);
+  const combatRoom =
+    floor.rooms.find((room) => room.purpose === "combat" && room.enemyNames.length > 0) ??
+    startRoom;
 
   const wrapper = document.createElement("div");
   wrapper.className = "combat-wrapper";
 
   const status = document.createElement("p");
   status.className = "data-text";
-  status.textContent = `block ${floor.description.sourceBlockNumber.toLocaleString("en-GB")} · loading`;
+  status.textContent = "loading the floor";
 
   const canvas = document.createElement("canvas");
   canvas.className = "game-viewport";
-  canvas.style.width = `${tileMap.columnCount * TILE_SIZE * COMBAT_DISPLAY_SCALE}px`;
-  canvas.style.height = `${tileMap.rowCount * TILE_SIZE * COMBAT_DISPLAY_SCALE}px`;
+  canvas.style.width = `${ROOM_TILE_COLUMNS * TILE_SIZE * COMBAT_DISPLAY_SCALE}px`;
+  canvas.style.height = `${ROOM_TILE_ROWS * TILE_SIZE * COMBAT_DISPLAY_SCALE}px`;
 
   const controls = document.createElement("p");
   controls.className = "data-text";
@@ -38,16 +42,30 @@ export function showCombatScreen(
   container.append(wrapper);
 
   const player = createPlayer(
-    (tileMap.columnCount * TILE_SIZE) / 2,
-    (tileMap.rowCount * TILE_SIZE) / 2,
+    (ROOM_TILE_COLUMNS * TILE_SIZE) / 2,
+    (ROOM_TILE_ROWS * TILE_SIZE) / 2,
     chooseWeaponStyle(relics),
     relics
   );
 
-  Promise.all([loadTileSheets(), loadHeroSprites()])
-    .then(([sheets, heroSprites]) => {
-      status.textContent = `block ${floor.description.sourceBlockNumber.toLocaleString("en-GB")} · ${player.weaponStyle}`;
-      runCombatLoop(canvas, player, tileMap, sheets, heroSprites);
+  const deepestRelic = findDeepestRelic(relics);
+
+  Promise.all([loadTileSheets(), loadHeroSprites(), loadEnemySprites()])
+    .then(([sheets, heroSprites, enemySprites]) => {
+      status.textContent = `${combatRoom.enemyNames.length} hostile · ${player.weaponStyle}`;
+
+      runCombatLoop(canvas, player, floor, combatRoom, sheets, heroSprites, enemySprites, {
+        onRoomCleared: () => {
+          status.textContent = "room clear";
+        },
+        onPlayerDied: (roomsCleared, kills) => {
+          showDeathScreen(container, floor, relics, {
+            roomsCleared,
+            kills,
+            deepestBlockNumber: deepestRelic ? deepestRelic.sourceBlockNumber : 0
+          });
+        }
+      });
     })
     .catch((failure) => {
       status.textContent = failure instanceof Error ? failure.message : String(failure);
