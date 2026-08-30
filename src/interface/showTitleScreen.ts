@@ -51,7 +51,8 @@ function createStandingHero(): HTMLCanvasElement {
         TITLE_SCREEN_HERO_FRAMES_PER_SECOND,
         TITLE_SCREEN_HERO_SCALE,
         HERO_BODY_CROP_REGION,
-        DEFAULT_TUNIC_COLOUR
+        DEFAULT_TUNIC_COLOUR,
+        "standingDown"
       );
     })
     .catch(() => {
