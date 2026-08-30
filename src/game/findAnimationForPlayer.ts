@@ -15,6 +15,10 @@ export function findAnimationForPlayer(
     return ANIMATION_FOR_WEAPON[weaponStyle];
   }
 
+  if (activity === "casting") {
+    return "spellcast";
+  }
+
   if (activity === "dying") {
     return "hurt";
   }
