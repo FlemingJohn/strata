@@ -16,6 +16,11 @@ import {
   STAMINA_RECOVERY_DELAY_SECONDS,
   STAMINA_RECOVERY_PER_SECOND
 } from "../constants/playerSettings";
+import {
+  CAST_COOLDOWN_SECONDS,
+  CAST_DURATION_SECONDS,
+  CAST_STAMINA_COST
+} from "../constants/abilitySettings";
 import { movePlayerThroughRoom } from "./movePlayerThroughRoom";
 
 const ATTACK_DURATIONS = {
@@ -42,6 +47,10 @@ function findFacingFromInput(
 function findMovementSpeed(player: PlayerCharacter): number {
   if (player.activity === "rolling") {
     return PLAYER_ROLLING_SPEED_PIXELS_PER_SECOND;
+  }
+
+  if (player.activity === "casting") {
+    return 0;
   }
 
   if (player.activity === "attacking") {
@@ -73,6 +82,7 @@ export function updatePlayer(
   player.secondsUntilActivityEnds -= secondsElapsed;
   player.secondsUntilStaminaRecovers -= secondsElapsed;
   player.secondsRemainingInvulnerable -= secondsElapsed;
+  player.secondsUntilCastReady -= secondsElapsed;
 
   if (player.secondsUntilActivityEnds <= 0 && player.activity !== "standing") {
     player.activity = "standing";
@@ -89,7 +99,17 @@ export function updatePlayer(
       player.facing = facing;
     }
 
-    if (input.wantsToAttack) {
+    if (
+      input.wantsToCast &&
+      player.secondsUntilCastReady <= 0 &&
+      player.currentStamina >= CAST_STAMINA_COST
+    ) {
+      player.activity = "casting";
+      player.secondsUntilActivityEnds = CAST_DURATION_SECONDS;
+      player.secondsUntilCastReady = CAST_COOLDOWN_SECONDS;
+      player.currentStamina -= CAST_STAMINA_COST;
+      player.secondsUntilStaminaRecovers = STAMINA_RECOVERY_DELAY_SECONDS;
+    } else if (input.wantsToAttack) {
       player.activity = "attacking";
       player.secondsUntilActivityEnds = ATTACK_DURATIONS[player.weaponStyle];
       player.currentAttackIdentifier += 1;
