@@ -28,5 +28,4 @@ export const ENEMY_NAMES: EnemyName[] = [
   "orcWarrior"
 ];
 
-export const HERO_GROUND_OFFSET_PIXELS = 47;
 export const ENEMY_GROUND_OFFSET_PIXELS = 31;
