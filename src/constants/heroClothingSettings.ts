@@ -1,14 +1,15 @@
-export const TORSO_TOP_IN_FRAME = 31;
-export const TORSO_BOTTOM_IN_FRAME = 41;
-export const LEGS_TOP_IN_FRAME = 41;
-export const LEGS_BOTTOM_IN_FRAME = 48;
-export const BELT_TOP_IN_FRAME = 39;
-export const BELT_BOTTOM_IN_FRAME = 41;
+export const HOOD_SHARE_OF_HEAD = 0.62;
 
+export const HOOD_COLOUR = "#2F2A24";
 export const DEFAULT_TUNIC_COLOUR = "#4A7CA0";
-export const TROUSERS_COLOUR = "#3A2A1C";
 export const BELT_COLOUR = "#5E4326";
+export const TROUSERS_COLOUR = "#3A2A1C";
+export const BOOT_COLOUR = "#241A11";
 
-export const CLOTHING_OPACITY = 0.82;
-export const TROUSERS_OPACITY = 0.9;
-export const BELT_OPACITY = 0.95;
+export const HOOD_OPACITY = 0.88;
+export const TUNIC_OPACITY = 0.8;
+export const CLOAK_OPACITY = 0.95;
+export const TROUSERS_OPACITY = 0.88;
+
+export const BELT_THICKNESS = 2;
+export const BOOT_THICKNESS = 3;
