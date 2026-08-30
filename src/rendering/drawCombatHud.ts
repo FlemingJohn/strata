@@ -72,4 +72,12 @@ export function drawCombatHud(
     context.fillStyle = HIGHLIGHT_COLOUR;
     context.fillText("EXITS OPEN", BAR_WIDTH + 90, 19);
   }
+
+  const castReady = player.secondsUntilCastReady <= 0;
+  context.fillStyle = castReady ? HIGHLIGHT_COLOUR : LABEL_COLOUR;
+  context.fillText(
+    castReady ? "NOVA READY" : `NOVA ${Math.ceil(player.secondsUntilCastReady)}s`,
+    BAR_WIDTH + 160,
+    10
+  );
 }
