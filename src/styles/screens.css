@@ -330,3 +330,7 @@
   margin: 0;
   text-shadow: 4px 4px 0 #000;
 }
+
+.death-heading-survived {
+  color: var(--colour-bedrock);
+}
