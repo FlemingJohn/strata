@@ -7,7 +7,7 @@ import { createPlayer } from "../game/createPlayer";
 import { enterFullScreen, leaveFullScreen } from "./enterFullScreen";
 import { fitCanvasToViewport } from "../rendering/fitCanvasToViewport";
 import { loadEnemySprites } from "../rendering/loadEnemySprites";
-import { loadHeroSprites } from "../rendering/loadHeroSprites";
+import { loadLpcCharacter } from "../rendering/loadLpcCharacter";
 import { loadTileSheets } from "../rendering/loadTileSheets";
 import { runCombatLoop } from "../game/runCombatLoop";
 import { showDeathScreen } from "./showDeathScreen";
@@ -64,7 +64,7 @@ export function showCombatScreen(
     });
   }
 
-  Promise.all([loadTileSheets(), loadHeroSprites(), loadEnemySprites()])
+  Promise.all([loadTileSheets(), loadLpcCharacter(), loadEnemySprites()])
     .then(([sheets, heroSprites, enemySprites]) => {
       runCombatLoop(canvas, player, floor, startRoom, sheets, heroSprites, enemySprites, {
         onRoomEntered: (room, clearedCount) => {
