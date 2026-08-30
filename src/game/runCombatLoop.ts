@@ -20,6 +20,8 @@ import {
 } from "./createImpactFeedback";
 import { drawCombatHud } from "../rendering/drawCombatHud";
 import { drawEnemies, drawParticles, drawProjectiles } from "../rendering/drawEnemies";
+import { drawEntityShadow } from "../rendering/drawEntityShadow";
+import { drawRoomEdgeShadow } from "../rendering/drawRoomEdgeShadow";
 import { drawRoomTiles } from "../rendering/drawRoomTiles";
 import { drawSpriteFrame } from "../rendering/drawSpriteFrame";
 import {
@@ -32,6 +34,8 @@ import { generateRoomTiles } from "./generateRoomTiles";
 import { resolveAttackHits } from "./resolveAttackHits";
 import { spawnEnemiesForRoom } from "./createEnemy";
 import { applyDamageToPlayer, updatePlayer } from "./updatePlayer";
+import { findSoundEngine } from "../audio/sharedSoundEngine";
+import { findStratumForBlock } from "./findStratumForBlock";
 import { updateEnemies, updateProjectiles } from "./updateEnemies";
 
 export interface CombatLoopController {
@@ -65,6 +69,8 @@ export function runCombatLoop(
     throw new Error("The combat canvas does not support two dimensional drawing");
   }
 
+  const sound = findSoundEngine();
+  const stratum = findStratumForBlock(floor.description.sourceBlockNumber);
   const respectsReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const inputReader = createInputReader();
   const feedback = createImpactFeedback();
@@ -160,6 +166,7 @@ export function runCombatLoop(
       );
 
       if (wasHurt) {
+        sound.play("playerHurt");
         burstParticles(
           particles,
           player.horizontalPosition,
@@ -198,6 +205,7 @@ export function runCombatLoop(
       );
 
       if (wasHurt) {
+        sound.play("playerHurt");
         burstParticles(
           particles,
           player.horizontalPosition,
@@ -220,6 +228,7 @@ export function runCombatLoop(
 
     currentRoom.hasBeenCleared = true;
     roomsCleared += 1;
+    sound.play("roomCleared");
     player.currentHealth = Math.min(
       player.maximumHealth,
       player.currentHealth + HEALTH_RESTORED_ON_ROOM_CLEARED
@@ -250,6 +259,7 @@ export function runCombatLoop(
       return;
     }
 
+    sound.play("doorOpens");
     enterRoom(nextRoom, direction);
   }
 
@@ -288,11 +298,23 @@ export function runCombatLoop(
     }
 
     context.clearRect(-16, -16, canvas.width + 32, canvas.height + 32);
-    drawRoomTiles(context, tileMap, sheets);
+    drawRoomTiles(context, tileMap, sheets, stratum.inkColour);
+
+    for (const enemy of enemies) {
+      drawEntityShadow(
+        context,
+        enemy.horizontalPosition,
+        enemy.verticalPosition,
+        enemy.definition.collisionRadius * 2.6
+      );
+    }
+
+    drawEntityShadow(context, player.horizontalPosition, player.verticalPosition, 14);
     drawEnemies(context, enemies, enemySprites, animationFrameIndex);
     drawPlayer();
     drawProjectiles(context, projectiles);
     drawParticles(context, particles);
+    drawRoomEdgeShadow(context, canvas.width, canvas.height);
     context.restore();
 
     drawCombatHud(
@@ -330,9 +352,34 @@ export function runCombatLoop(
         player.activity = input.horizontal !== 0 || input.vertical !== 0 ? "walking" : "standing";
       }
 
+      if (wasStanding && player.activity === "attacking") {
+        sound.play("swing");
+      }
+
+      if (wasStanding && player.activity === "rolling") {
+        sound.play("roll");
+      }
+
       updateEnemies(enemies, projectiles, player, tileMap, secondsElapsed);
       updateProjectiles(projectiles, tileMap, secondsElapsed);
-      totalKills += resolveAttackHits(player, enemies, particles, feedback, respectsReducedMotion);
+      const enemiesBeforeAttack = enemies.length;
+      const killsThisFrame = resolveAttackHits(
+        player,
+        enemies,
+        particles,
+        feedback,
+        respectsReducedMotion
+      );
+      totalKills += killsThisFrame;
+
+      if (killsThisFrame > 0) {
+        sound.play("enemyDies");
+      } else if (
+        feedback.secondsOfHitStopRemaining > 0 &&
+        enemiesBeforeAttack === enemies.length
+      ) {
+        sound.play("hitConnects");
+      }
       applyEnemyContactDamage();
       applyProjectileDamage();
       updateParticles(particles, secondsElapsed);
@@ -369,6 +416,8 @@ export function runCombatLoop(
     animationHandle = window.requestAnimationFrame(renderFrame);
   }
 
+  sound.resumeAfterUserAction();
+  sound.startDrone();
   spawnForCurrentRoom();
   handlers.onRoomEntered(currentRoom, countClearedRooms());
   animationHandle = window.requestAnimationFrame(renderFrame);
@@ -378,6 +427,7 @@ export function runCombatLoop(
       isRunning = false;
       window.cancelAnimationFrame(animationHandle);
       inputReader.stopListening();
+      sound.stopDrone();
     }
   };
 }
