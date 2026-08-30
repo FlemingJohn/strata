@@ -321,3 +321,12 @@
   align-items: center;
   gap: 8px;
 }
+
+.death-heading {
+  font-family: var(--font-logo);
+  font-size: var(--text-size-large);
+  color: var(--colour-boom);
+  text-align: center;
+  margin: 0;
+  text-shadow: 4px 4px 0 #000;
+}
