@@ -1,18 +1,29 @@
+import type { HeroBodyBands } from "../constants/heroBodyBands";
 import type { SpriteSheet } from "../types/spriteSheet";
+import { HERO_BODY_BANDS } from "../constants/heroBodyBands";
 import {
-  BELT_BOTTOM_IN_FRAME,
   BELT_COLOUR,
-  BELT_OPACITY,
-  BELT_TOP_IN_FRAME,
-  CLOTHING_OPACITY,
+  BELT_THICKNESS,
+  BOOT_COLOUR,
+  BOOT_THICKNESS,
+  CLOAK_OPACITY,
   DEFAULT_TUNIC_COLOUR,
-  LEGS_BOTTOM_IN_FRAME,
-  LEGS_TOP_IN_FRAME,
-  TORSO_BOTTOM_IN_FRAME,
-  TORSO_TOP_IN_FRAME,
+  HOOD_COLOUR,
+  HOOD_OPACITY,
+  HOOD_SHARE_OF_HEAD,
   TROUSERS_COLOUR,
-  TROUSERS_OPACITY
+  TROUSERS_OPACITY,
+  TUNIC_OPACITY
 } from "../constants/heroClothingSettings";
+
+const FALLBACK_BANDS: HeroBodyBands = {
+  headTop: 19,
+  headBottom: 31,
+  torsoTop: 31,
+  torsoBottom: 40,
+  legsTop: 40,
+  legsBottom: 48
+};
 
 let dressingCanvas: HTMLCanvasElement | null = null;
 
@@ -29,18 +40,34 @@ function findDressingCanvas(size: number): HTMLCanvasElement {
   return dressingCanvas;
 }
 
-function paintBand(
+export function findBodyBands(sheetName: string, frameIndex: number): HeroBodyBands {
+  const framesForSheet = HERO_BODY_BANDS[sheetName];
+
+  if (!framesForSheet || framesForSheet.length === 0) {
+    return FALLBACK_BANDS;
+  }
+
+  return framesForSheet[frameIndex % framesForSheet.length];
+}
+
+function paintGarment(
   context: CanvasRenderingContext2D,
   frameSize: number,
-  topInFrame: number,
-  bottomInFrame: number,
+  topRow: number,
+  bottomRow: number,
   colour: string,
   opacity: number
 ): void {
+  const height = bottomRow - topRow;
+
+  if (height <= 0) {
+    return;
+  }
+
   context.globalCompositeOperation = "source-atop";
   context.globalAlpha = opacity;
   context.fillStyle = colour;
-  context.fillRect(0, topInFrame, frameSize, bottomInFrame - topInFrame);
+  context.fillRect(0, topRow, frameSize, height);
   context.globalAlpha = 1;
   context.globalCompositeOperation = "source-over";
 }
@@ -48,6 +75,7 @@ function paintBand(
 export function drawClothedHero(
   targetContext: CanvasRenderingContext2D,
   spriteSheet: SpriteSheet,
+  sheetName: string,
   frameIndex: number,
   destinationLeft: number,
   destinationTop: number,
@@ -61,6 +89,8 @@ export function drawClothedHero(
   if (!context) {
     return;
   }
+
+  const bands = findBodyBands(sheetName, frameIndex);
 
   context.globalCompositeOperation = "source-over";
   context.globalAlpha = 1;
@@ -79,29 +109,41 @@ export function drawClothedHero(
     spriteSheet.frameHeight
   );
 
-  paintBand(
+  const headHeight = bands.headBottom - bands.headTop;
+  const hoodBottom = bands.headTop + Math.max(1, Math.round(headHeight * HOOD_SHARE_OF_HEAD));
+
+  paintGarment(context, frameSize, bands.headTop, hoodBottom, HOOD_COLOUR, HOOD_OPACITY);
+  paintGarment(
     context,
     frameSize,
-    TORSO_TOP_IN_FRAME,
-    TORSO_BOTTOM_IN_FRAME,
+    bands.torsoTop,
+    bands.torsoBottom,
     tunicColour || DEFAULT_TUNIC_COLOUR,
-    CLOTHING_OPACITY
+    TUNIC_OPACITY
   );
-  paintBand(
+  paintGarment(
     context,
     frameSize,
-    LEGS_TOP_IN_FRAME,
-    LEGS_BOTTOM_IN_FRAME,
+    bands.torsoBottom - BELT_THICKNESS,
+    bands.torsoBottom,
+    BELT_COLOUR,
+    CLOAK_OPACITY
+  );
+  paintGarment(
+    context,
+    frameSize,
+    bands.legsTop,
+    bands.legsBottom - BOOT_THICKNESS,
     TROUSERS_COLOUR,
     TROUSERS_OPACITY
   );
-  paintBand(
+  paintGarment(
     context,
     frameSize,
-    BELT_TOP_IN_FRAME,
-    BELT_BOTTOM_IN_FRAME,
-    BELT_COLOUR,
-    BELT_OPACITY
+    bands.legsBottom - BOOT_THICKNESS,
+    bands.legsBottom,
+    BOOT_COLOUR,
+    TROUSERS_OPACITY
   );
 
   if (!shouldMirrorHorizontally) {
