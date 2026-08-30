@@ -6,6 +6,7 @@ const KEYS_MOVING_LEFT = ["arrowleft", "a"];
 const KEYS_MOVING_RIGHT = ["arrowright", "d"];
 const KEYS_ATTACKING = ["j", " "];
 const KEYS_ROLLING = ["k", "shift"];
+const KEYS_CASTING = ["l", "e"];
 
 const KEYS_TO_PREVENT = new Set([
   "arrowup",
@@ -45,7 +46,8 @@ export function createInputReader(): InputReader {
         vertical:
           (anyKeyHeld(KEYS_MOVING_DOWN) ? 1 : 0) - (anyKeyHeld(KEYS_MOVING_UP) ? 1 : 0),
         wantsToAttack: anyKeyHeld(KEYS_ATTACKING),
-        wantsToRoll: anyKeyHeld(KEYS_ROLLING)
+        wantsToRoll: anyKeyHeld(KEYS_ROLLING),
+        wantsToCast: anyKeyHeld(KEYS_CASTING)
       };
     },
     stopListening(): void {
