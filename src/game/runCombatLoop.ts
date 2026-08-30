@@ -20,6 +20,7 @@ import {
 import { drawCombatHud } from "../rendering/drawCombatHud";
 import { drawEnemies, drawParticles, drawProjectiles } from "../rendering/drawEnemies";
 import type { Ember, FirePlacement } from "../types/fire";
+import type { Shockwave } from "../types/ability";
 import type { TorchPlacement } from "../types/lighting";
 import { LPC_FRAME_SIZE, LPC_FRAMES_PER_SECOND, LPC_GROUND_OFFSET_PIXELS } from "../constants/lpcCharacterSettings";
 import { PLAYER_LIGHT_RADIUS_PIXELS } from "../constants/lightingSettings";
@@ -48,6 +49,25 @@ import { findSoundEngine } from "../audio/sharedSoundEngine";
 import { findAreaTheme } from "../constants/areaThemes";
 import { findStratumForBlock } from "./findStratumForBlock";
 import { placeFires } from "./placeFires";
+import {
+  createShockwave,
+  drawShockwaves,
+  findShockwaveRadius,
+  updateShockwaves
+} from "./createShockwave";
+import {
+  NOVA_COLOUR,
+  NOVA_DAMAGE,
+  NOVA_EXPAND_SECONDS,
+  NOVA_KNOCKBACK_SPEED,
+  NOVA_MAXIMUM_RADIUS_PIXELS,
+  NOVA_SELF_DAMAGE,
+  SLAM_COLOUR,
+  SLAM_COOLDOWN_SECONDS,
+  SLAM_DAMAGE,
+  SLAM_EXPAND_SECONDS,
+  SLAM_MAXIMUM_RADIUS_PIXELS
+} from "../constants/abilitySettings";
 import { drawEmbers, drawFireSprites, updateEmbers } from "../rendering/drawFires";
 import {
   FIRE_CONTACT_DAMAGE,
@@ -99,6 +119,9 @@ export function runCombatLoop(
   let torches: TorchPlacement[] = placeTorches(tileMap);
   let fires: FirePlacement[] = [];
   const embers: Ember[] = [];
+  const shockwaves: Shockwave[] = [];
+  let wasCastingLastFrame = false;
+  let secondsUntilBossSlam = SLAM_COOLDOWN_SECONDS;
   let theme = findAreaTheme(stratum.stratumNumber, currentRoom.purpose === "boss");
   let elapsedSeconds = 0;
   let fireFrameIndex = 0;
@@ -176,6 +199,133 @@ export function runCombatLoop(
     if (secondsSinceFrameChange >= secondsPerFrame) {
       secondsSinceFrameChange -= secondsPerFrame;
       animationFrameIndex += 1;
+    }
+  }
+
+  function releaseCastWhenFinished(): void {
+    const isCasting = player.activity === "casting";
+
+    if (wasCastingLastFrame && !isCasting) {
+      shockwaves.push(
+        createShockwave(
+          player.horizontalPosition,
+          player.verticalPosition,
+          NOVA_MAXIMUM_RADIUS_PIXELS,
+          NOVA_EXPAND_SECONDS,
+          NOVA_DAMAGE,
+          "player",
+          NOVA_COLOUR
+        )
+      );
+      sound.play("enemyDies");
+      burstParticles(
+        particles,
+        player.horizontalPosition,
+        player.verticalPosition,
+        18,
+        NOVA_COLOUR,
+        150
+      );
+      player.currentHealth -= NOVA_SELF_DAMAGE;
+      feedback.secondsOfHitStopRemaining = Math.max(feedback.secondsOfHitStopRemaining, 0.09);
+
+      if (!respectsReducedMotion) {
+        feedback.screenShakePixels = Math.max(feedback.screenShakePixels, 6);
+      }
+    }
+
+    wasCastingLastFrame = isCasting;
+  }
+
+  function releaseBossSlam(secondsElapsed: number): void {
+    secondsUntilBossSlam -= secondsElapsed;
+
+    if (secondsUntilBossSlam > 0) {
+      return;
+    }
+
+    const boss = enemies.find((enemy) => enemy.definition.name === "orcWarrior");
+
+    if (!boss) {
+      return;
+    }
+
+    secondsUntilBossSlam = SLAM_COOLDOWN_SECONDS;
+    shockwaves.push(
+      createShockwave(
+        boss.horizontalPosition,
+        boss.verticalPosition,
+        SLAM_MAXIMUM_RADIUS_PIXELS,
+        SLAM_EXPAND_SECONDS,
+        SLAM_DAMAGE,
+        "enemy",
+        SLAM_COLOUR
+      )
+    );
+    burstParticles(particles, boss.horizontalPosition, boss.verticalPosition, 14, SLAM_COLOUR, 150);
+
+    if (!respectsReducedMotion) {
+      feedback.screenShakePixels = Math.max(feedback.screenShakePixels, 5);
+    }
+  }
+
+  function applyShockwaveDamage(): void {
+    for (const wave of shockwaves) {
+      if (wave.hasDealtDamage || wave.secondsElapsed < wave.expandSeconds * 0.5) {
+        continue;
+      }
+
+      wave.hasDealtDamage = true;
+      const radius = findShockwaveRadius(wave);
+
+      if (wave.owner === "player") {
+        for (let index = enemies.length - 1; index >= 0; index--) {
+          const enemy = enemies[index];
+          const distance = Math.hypot(
+            enemy.horizontalPosition - wave.horizontalPosition,
+            enemy.verticalPosition - wave.verticalPosition
+          );
+
+          if (distance > radius + enemy.definition.collisionRadius) {
+            continue;
+          }
+
+          enemy.currentHealth -= wave.damage;
+          enemy.secondsRemainingFlashing = 0.09;
+          const away = Math.max(1, distance);
+          enemy.knockbackHorizontal =
+            ((enemy.horizontalPosition - wave.horizontalPosition) / away) * NOVA_KNOCKBACK_SPEED;
+          enemy.knockbackVertical =
+            ((enemy.verticalPosition - wave.verticalPosition) / away) * NOVA_KNOCKBACK_SPEED;
+
+          if (enemy.currentHealth <= 0) {
+            burstParticles(particles, enemy.horizontalPosition, enemy.verticalPosition, 20, NOVA_COLOUR, 160);
+            enemies.splice(index, 1);
+            totalKills += 1;
+          }
+        }
+
+        continue;
+      }
+
+      const distanceToPlayer = Math.hypot(
+        player.horizontalPosition - wave.horizontalPosition,
+        player.verticalPosition - wave.verticalPosition
+      );
+
+      if (distanceToPlayer <= radius + player.collisionRadius) {
+        const wasHurt = applyDamageToPlayer(
+          player,
+          wave.damage,
+          wave.horizontalPosition,
+          wave.verticalPosition,
+          NOVA_KNOCKBACK_SPEED
+        );
+
+        if (wasHurt) {
+          sound.play("playerHurt");
+        }
+      }
     }
   }
 
@@ -394,6 +544,8 @@ export function runCombatLoop(
       drawFireSprites(context, sheets.fireSheet, sheets.smokeSheet, fires, fireFrameIndex);
     }
 
+    drawShockwaves(context, shockwaves);
+
     const lights = buildTorchLights(torches, elapsedSeconds);
 
     for (const fire of fires) {
@@ -493,6 +645,10 @@ export function runCombatLoop(
       applyEnemyContactDamage();
       applyProjectileDamage();
       applyFireContactDamage();
+      releaseCastWhenFinished();
+      releaseBossSlam(secondsElapsed);
+      updateShockwaves(shockwaves, secondsElapsed);
+      applyShockwaveDamage();
       updateParticles(particles, secondsElapsed);
 
       if (enemies.length === 0) {
