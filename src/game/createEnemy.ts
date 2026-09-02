@@ -1,6 +1,6 @@
 import type { EnemyCharacter, EnemyName } from "../types/enemy";
 import type { RoomTileMap } from "../types/dungeon";
-import { ENEMY_DEFINITIONS } from "../constants/enemySettings";
+import { ELITE_NAMES_BY_STRATUM, ENEMY_DEFINITIONS } from "../constants/enemySettings";
 import { ENEMY_ANIMATION_FRAMES_PER_SECOND } from "../constants/animationSettings";
 import { TILE_SIZE } from "../constants/tilesetSettings";
 import { collidesWithWall } from "./movePlayerThroughRoom";
@@ -37,6 +37,21 @@ export function createEnemy(
     chargeVelocityVertical: 0,
     lastAttackIdentifierReceived: -1
   };
+}
+
+export function chooseEliteNames(
+  stratumNumber: number,
+  eliteCount: number,
+  nextRandomNumber: () => number
+): EnemyName[] {
+  const pool = ELITE_NAMES_BY_STRATUM[stratumNumber] ?? ELITE_NAMES_BY_STRATUM[1];
+  const chosen: EnemyName[] = [];
+
+  for (let index = 0; index < eliteCount; index++) {
+    chosen.push(pool[Math.floor(nextRandomNumber() * pool.length)]);
+  }
+
+  return chosen;
 }
 
 export function spawnEnemiesForRoom(
