@@ -22,6 +22,7 @@ import {
   CAST_STAMINA_COST
 } from "../constants/abilitySettings";
 import { movePlayerThroughRoom } from "./movePlayerThroughRoom";
+import { findSpeedMultiplierAt } from "./findTileKindAt";
 
 const ATTACK_DURATIONS = {
   slice: SLICE_DURATION_SECONDS,
@@ -141,7 +142,9 @@ export function updatePlayer(
     }
   }
 
-  const speed = findMovementSpeed(player);
+  const speed =
+    findMovementSpeed(player) *
+    findSpeedMultiplierAt(tileMap, player.horizontalPosition, player.verticalPosition);
   const directionHorizontal =
     player.activity === "rolling" ? player.rollDirectionHorizontal : normalisedHorizontal;
   const directionVertical =
