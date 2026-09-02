@@ -17,7 +17,6 @@ import { drawDustMotes, moveDustMotes } from "./drawDustMotes";
 import { drawEmbers, updateEmbers } from "./drawFires";
 import { drawDarknessWithLights } from "./drawTorchLight";
 import { drawMenuProtectionBand } from "./drawMenuProtectionBand";
-import { drawReadabilityOverlay } from "./drawReadabilityOverlay";
 import { loadTileSheets } from "./loadTileSheets";
 import { placeShaftTorches } from "./placeShaftTorches";
 
@@ -95,7 +94,6 @@ export function startDungeonBackground(canvas: HTMLCanvasElement): BackgroundCon
     drawDarknessWithLights(context, canvasWidth, canvasHeight, lights);
     drawEmbers(context, embers);
     drawMenuProtectionBand(context, canvasWidth, canvasHeight);
-    drawReadabilityOverlay(context, canvasWidth, canvasHeight);
   }
 
   function resizeCanvas(): void {
