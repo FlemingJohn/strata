@@ -1,40 +1,32 @@
-import type { SpriteCropRegion } from "../types/spriteSheet";
+import type { WeaponSprite } from "../constants/weaponSpriteRegions";
 import {
   WEAPON_ICON_BOX_SIZE,
   WEAPON_ICON_DISPLAY_SCALE,
-  WEAPON_SPRITE_REGIONS,
-  WOOD_WEAPON_SHEET_PATH
+  WEAPON_SHEET_PATHS,
+  WEAPON_SPRITES
 } from "../constants/weaponSpriteRegions";
 
-let sharedWeaponSheet: HTMLImageElement | null = null;
-let sharedWeaponSheetRequest: Promise<HTMLImageElement> | null = null;
+const loadedSheets: Record<string, Promise<HTMLImageElement>> = {};
 
-function loadWeaponSheet(): Promise<HTMLImageElement> {
-  if (sharedWeaponSheet) {
-    return Promise.resolve(sharedWeaponSheet);
-  }
-
-  if (!sharedWeaponSheetRequest) {
-    sharedWeaponSheetRequest = new Promise((resolve, reject) => {
+function loadWeaponSheet(sheetName: string): Promise<HTMLImageElement> {
+  if (!loadedSheets[sheetName]) {
+    loadedSheets[sheetName] = new Promise((resolve, reject) => {
       const image = new Image();
-      image.addEventListener("load", () => {
-        sharedWeaponSheet = image;
-        resolve(image);
-      });
+      image.addEventListener("load", () => resolve(image));
       image.addEventListener("error", () => {
-        reject(new Error("The weapon sheet could not be loaded"));
+        reject(new Error(`The weapon sheet ${sheetName} could not be loaded`));
       });
-      image.src = WOOD_WEAPON_SHEET_PATH;
+      image.src = WEAPON_SHEET_PATHS[sheetName];
     });
   }
 
-  return sharedWeaponSheetRequest;
+  return loadedSheets[sheetName];
 }
 
 function paintCentred(
   canvas: HTMLCanvasElement,
   sheet: HTMLImageElement,
-  region: SpriteCropRegion
+  sprite: WeaponSprite
 ): void {
   const context = canvas.getContext("2d");
 
@@ -45,19 +37,19 @@ function paintCentred(
   context.imageSmoothingEnabled = false;
   context.clearRect(0, 0, canvas.width, canvas.height);
 
-  const horizontalOffset = Math.floor((WEAPON_ICON_BOX_SIZE - region.width) / 2);
-  const verticalOffset = Math.floor((WEAPON_ICON_BOX_SIZE - region.height) / 2);
+  const horizontalOffset = Math.floor((WEAPON_ICON_BOX_SIZE - sprite.region.width) / 2);
+  const verticalOffset = Math.floor((WEAPON_ICON_BOX_SIZE - sprite.region.height) / 2);
 
   context.drawImage(
     sheet,
-    region.left,
-    region.top,
-    region.width,
-    region.height,
+    sprite.region.left,
+    sprite.region.top,
+    sprite.region.width,
+    sprite.region.height,
     horizontalOffset,
     verticalOffset,
-    region.width,
-    region.height
+    sprite.region.width,
+    sprite.region.height
   );
 }
 
@@ -70,10 +62,10 @@ export function createWeaponIconCanvas(weaponSpriteIndex: number): HTMLCanvasEle
   canvas.style.height = `${WEAPON_ICON_BOX_SIZE * WEAPON_ICON_DISPLAY_SCALE}px`;
   canvas.setAttribute("aria-hidden", "true");
 
-  const region = WEAPON_SPRITE_REGIONS[weaponSpriteIndex % WEAPON_SPRITE_REGIONS.length];
+  const sprite = WEAPON_SPRITES[weaponSpriteIndex % WEAPON_SPRITES.length];
 
-  loadWeaponSheet()
-    .then((sheet) => paintCentred(canvas, sheet, region))
+  loadWeaponSheet(sprite.sheetName)
+    .then((sheet) => paintCentred(canvas, sheet, sprite))
     .catch(() => canvas.remove());
 
   return canvas;
