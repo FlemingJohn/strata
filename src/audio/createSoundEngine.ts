@@ -1,11 +1,10 @@
 import type { SoundEngine, SoundName } from "../types/sound";
 import {
-  DRONE_BASE_FREQUENCIES,
-  DRONE_VOLUME,
   EFFECT_VOLUME,
   MUTE_STORAGE_KEY,
   SOUND_RECIPES
 } from "../constants/soundSettings";
+import { findAudioContext, resumeAudioContext } from "./findAudioContext";
 
 function readStoredMuteChoice(): boolean {
   try {
@@ -36,41 +35,30 @@ function createNoiseBuffer(audioContext: AudioContext, seconds: number): AudioBu
 }
 
 export function createSoundEngine(): SoundEngine {
-  let audioContext: AudioContext | null = null;
   let effectGain: GainNode | null = null;
-  let droneGain: GainNode | null = null;
-  let droneOscillators: OscillatorNode[] = [];
   let isMuted = readStoredMuteChoice();
 
-  function ensureContext(): AudioContext | null {
-    if (audioContext) {
-      return audioContext;
-    }
+  function ensureEffectGain(): GainNode | null {
+    const context = findAudioContext();
 
-    const AudioContextConstructor =
-      window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-
-    if (!AudioContextConstructor) {
+    if (!context) {
       return null;
     }
 
-    audioContext = new AudioContextConstructor();
+    if (!effectGain) {
+      effectGain = context.createGain();
+      effectGain.gain.value = isMuted ? 0 : EFFECT_VOLUME;
+      effectGain.connect(context.destination);
+    }
 
-    effectGain = audioContext.createGain();
-    effectGain.gain.value = isMuted ? 0 : EFFECT_VOLUME;
-    effectGain.connect(audioContext.destination);
-
-    droneGain = audioContext.createGain();
-    droneGain.gain.value = 0;
-    droneGain.connect(audioContext.destination);
-
-    return audioContext;
+    return effectGain;
   }
 
   function playTone(recipe: (typeof SOUND_RECIPES)[SoundName]): void {
-    const context = ensureContext();
+    const context = findAudioContext();
+    const destination = ensureEffectGain();
 
-    if (!context || !effectGain) {
+    if (!context || !destination) {
       return;
     }
 
@@ -78,7 +66,7 @@ export function createSoundEngine(): SoundEngine {
     const envelope = context.createGain();
     envelope.gain.setValueAtTime(recipe.peakGain, startTime);
     envelope.gain.exponentialRampToValueAtTime(0.0001, startTime + recipe.seconds);
-    envelope.connect(effectGain);
+    envelope.connect(destination);
 
     if (recipe.usesNoise) {
       const noise = context.createBufferSource();
@@ -112,17 +100,6 @@ export function createSoundEngine(): SoundEngine {
     oscillator.stop(startTime + recipe.seconds);
   }
 
-  function applyMuteToNodes(): void {
-    if (effectGain && audioContext) {
-      effectGain.gain.setTargetAtTime(isMuted ? 0 : EFFECT_VOLUME, audioContext.currentTime, 0.02);
-    }
-
-    if (droneGain && audioContext) {
-      const target = isMuted || droneOscillators.length === 0 ? 0 : DRONE_VOLUME;
-      droneGain.gain.setTargetAtTime(target, audioContext.currentTime, 0.6);
-    }
-  }
-
   return {
     play(soundName: SoundName): void {
       if (isMuted) {
@@ -132,52 +109,17 @@ export function createSoundEngine(): SoundEngine {
       playTone(SOUND_RECIPES[soundName]);
     },
 
-    startDrone(): void {
-      const context = ensureContext();
-
-      if (!context || !droneGain || droneOscillators.length > 0) {
-        return;
-      }
-
-      droneOscillators = DRONE_BASE_FREQUENCIES.map((frequency, index) => {
-        const oscillator = context.createOscillator();
-        oscillator.type = index === 0 ? "sine" : "triangle";
-        oscillator.frequency.value = frequency;
-
-        const drift = context.createOscillator();
-        drift.frequency.value = 0.05 + index * 0.03;
-
-        const driftAmount = context.createGain();
-        driftAmount.gain.value = 1.5 + index;
-
-        drift.connect(driftAmount);
-        driftAmount.connect(oscillator.frequency);
-        drift.start();
-
-        oscillator.connect(droneGain);
-        oscillator.start();
-        return oscillator;
-      });
-
-      applyMuteToNodes();
-    },
-
-    stopDrone(): void {
-      for (const oscillator of droneOscillators) {
-        oscillator.stop();
-      }
-
-      droneOscillators = [];
-
-      if (droneGain && audioContext) {
-        droneGain.gain.setTargetAtTime(0, audioContext.currentTime, 0.2);
-      }
-    },
-
     toggleMute(): boolean {
       isMuted = !isMuted;
       storeMuteChoice(isMuted);
-      applyMuteToNodes();
+
+      const context = findAudioContext();
+      const destination = ensureEffectGain();
+
+      if (context && destination) {
+        destination.gain.setTargetAtTime(isMuted ? 0 : EFFECT_VOLUME, context.currentTime, 0.02);
+      }
+
       return isMuted;
     },
 
@@ -186,11 +128,8 @@ export function createSoundEngine(): SoundEngine {
     },
 
     resumeAfterUserAction(): void {
-      const context = ensureContext();
-
-      if (context && context.state === "suspended") {
-        void context.resume();
-      }
+      ensureEffectGain();
+      resumeAudioContext();
     }
   };
 }
