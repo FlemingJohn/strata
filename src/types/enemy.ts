@@ -8,7 +8,10 @@ export type EnemyName =
   | "orc"
   | "orcRogue"
   | "orcShaman"
-  | "orcWarrior";
+  | "orcWarrior"
+  | "eliteKnight"
+  | "eliteRogue"
+  | "eliteWizard";
 
 export type EnemyBehaviour = "chasing" | "keepingDistance" | "windingUp" | "charging" | "recovering";
 
