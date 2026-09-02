@@ -4,6 +4,7 @@ export interface PlayerInput {
   wantsToAttack: boolean;
   wantsToRoll: boolean;
   wantsToCast: boolean;
+  wantsToUseStation: boolean;
 }
 
 export interface InputReader {
