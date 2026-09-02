@@ -57,6 +57,14 @@ import { countdownSharpenedWeapon, useStation } from "./useStation";
 import { plantTrees } from "./plantTrees";
 import { drawTrees } from "../rendering/drawTrees";
 import { TREE_STRATUM_NUMBER } from "../constants/treeSettings";
+import type { Survivor, SurvivorSpriteLibrary } from "../types/survivor";
+import { findSurvivorWithinReach, placeSurvivors } from "./placeSurvivors";
+import { updateSurvivors } from "./updateSurvivors";
+import { drawSurvivorPrompt, drawSurvivors } from "../rendering/drawSurvivors";
+import {
+  SURVIVOR_LABELS,
+  SURVIVOR_TALK_REACH_PIXELS
+} from "../constants/survivorSettings";
 import {
   FURNACE_PROP_SHEETS,
   PROP_SHEETS_BY_STRATUM
@@ -115,6 +123,7 @@ export function runCombatLoop(
   propSheets: PropSheets,
   treeSheets: PropSheets,
   stationSheets: StationSheets,
+  survivorSprites: SurvivorSpriteLibrary,
   handlers: CombatLoopHandlers
 ): CombatLoopController {
   const context = canvas.getContext("2d");
@@ -139,6 +148,7 @@ export function runCombatLoop(
   let props: PlacedProp[] = [];
   let stations: PlacedStation[] = [];
   let trees: PlacedProp[] = [];
+  let survivors: Survivor[] = [];
   let wasUsingStationLastFrame = false;
   const embers: Ember[] = [];
   let dyingEnemies: DyingEnemy[] = [];
@@ -185,6 +195,19 @@ export function runCombatLoop(
     );
   }
 
+  function gatherSurvivorsForCurrentRoom(): void {
+    survivors =
+      currentRoom.purpose === "start"
+        ? placeSurvivors(
+            tileMap,
+            floor.description,
+            createSeededRandomFromHash(
+              `${floor.description.layoutSeed}:${currentRoom.position.column}:${currentRoom.position.row}:survivors`
+            )
+          )
+        : [];
+  }
+
   function plantTreesForCurrentRoom(): void {
     trees =
       floor.description.stratumNumber === TREE_STRATUM_NUMBER && currentRoom.purpose !== "boss"
@@ -223,21 +246,35 @@ export function runCombatLoop(
       player.verticalPosition
     );
 
-    if (!station) {
+    if (station) {
+      const message = useStation(player, station);
+      sound.play("roomCleared");
+      burstParticles(
+        particles,
+        station.horizontalPosition,
+        station.verticalPosition - 8,
+        16,
+        "#F5D18A",
+        140
+      );
+      handlers.onStationUsed(message);
       return;
     }
 
-    const message = useStation(player, station);
-    sound.play("roomCleared");
-    burstParticles(
-      particles,
-      station.horizontalPosition,
-      station.verticalPosition - 8,
-      16,
-      "#F5D18A",
-      140
+    const survivor = findSurvivorWithinReach(
+      survivors,
+      player.horizontalPosition,
+      player.verticalPosition,
+      SURVIVOR_TALK_REACH_PIXELS
     );
-    handlers.onStationUsed(message);
+
+    if (!survivor) {
+      return;
+    }
+
+    survivor.hasSpoken = true;
+    sound.play("doorOpens");
+    handlers.onStationUsed(`${SURVIVOR_LABELS[survivor.name]}: ${survivor.rumour}`);
   }
 
   function spawnForCurrentRoom(): void {
@@ -289,6 +326,7 @@ export function runCombatLoop(
     particles.length = 0;
     dyingEnemies = [];
     scatterPropsForCurrentRoom();
+    gatherSurvivorsForCurrentRoom();
     plantTreesForCurrentRoom();
     raiseStationsForCurrentRoom();
     spawnForCurrentRoom();
@@ -625,6 +663,7 @@ export function runCombatLoop(
     drawTorchGlow(context, torches, elapsedSeconds);
     drawProps(context, props, propSheets);
     drawStations(context, stations, stationSheets, elapsedSeconds);
+    drawSurvivors(context, survivors, survivorSprites, elapsedSeconds);
     drawTrees(context, trees, treeSheets);
 
     if (currentRoom.purpose === "start" || currentRoom.purpose === "relic") {
@@ -671,6 +710,17 @@ export function runCombatLoop(
 
     if (stationInReach) {
       drawStationPrompt(context, stationInReach);
+    }
+
+    const survivorInReach = findSurvivorWithinReach(
+      survivors,
+      player.horizontalPosition,
+      player.verticalPosition,
+      SURVIVOR_TALK_REACH_PIXELS
+    );
+
+    if (!stationInReach && survivorInReach) {
+      drawSurvivorPrompt(context, survivorInReach);
     }
 
     context.restore();
@@ -748,6 +798,7 @@ export function runCombatLoop(
       ) {
         sound.play("hitConnects");
       }
+      updateSurvivors(survivors, tileMap, secondsElapsed);
       useStationWhenAsked();
       countdownSharpenedWeapon(player, secondsElapsed);
       applyEnemyContactDamage();
@@ -801,6 +852,7 @@ export function runCombatLoop(
       )
     : [];
   scatterPropsForCurrentRoom();
+  gatherSurvivorsForCurrentRoom();
   plantTreesForCurrentRoom();
   raiseStationsForCurrentRoom();
   spawnForCurrentRoom();
