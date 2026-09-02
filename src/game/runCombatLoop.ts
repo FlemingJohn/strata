@@ -50,6 +50,10 @@ import { findStratumForBlock } from "./findStratumForBlock";
 import { placeFires } from "./placeFires";
 import { placeProps } from "./placeProps";
 import { drawProps } from "../rendering/drawProps";
+import type { PlacedStation, StationSheets } from "../types/station";
+import { findStationWithinReach, placeStations } from "./placeStations";
+import { drawStationPrompt, drawStations } from "../rendering/drawStations";
+import { countdownSharpenedWeapon, useStation } from "./useStation";
 import {
   FURNACE_PROP_SHEETS,
   PROP_SHEETS_BY_STRATUM
@@ -92,6 +96,7 @@ export interface CombatLoopHandlers {
   onPlayerDied: (roomsCleared: number, kills: number) => void;
   onRoomEntered: (room: DungeonRoom, roomsCleared: number) => void;
   onFloorCompleted: (roomsCleared: number, kills: number) => void;
+  onStationUsed: (message: string) => void;
 }
 
 const SECONDS_BLOCKING_REENTRY = 0.4;
@@ -105,6 +110,7 @@ export function runCombatLoop(
   heroSprites: LpcCharacterSheets,
   enemySprites: EnemySpriteLibrary,
   propSheets: PropSheets,
+  stationSheets: StationSheets,
   handlers: CombatLoopHandlers
 ): CombatLoopController {
   const context = canvas.getContext("2d");
@@ -127,6 +133,8 @@ export function runCombatLoop(
   let torches = placeTorches(tileMap);
   let fires: FirePlacement[] = [];
   let props: PlacedProp[] = [];
+  let stations: PlacedStation[] = [];
+  let wasUsingStationLastFrame = false;
   const embers: Ember[] = [];
   let dyingEnemies: DyingEnemy[] = [];
   const shockwaves: Shockwave[] = [];
@@ -170,6 +178,49 @@ export function runCombatLoop(
         `${floor.description.layoutSeed}:${currentRoom.position.column}:${currentRoom.position.row}:props`
       )
     );
+  }
+
+  function raiseStationsForCurrentRoom(): void {
+    stations = placeStations(
+      tileMap,
+      currentRoom.purpose,
+      createSeededRandomFromHash(
+        `${floor.description.layoutSeed}:${currentRoom.position.column}:${currentRoom.position.row}:stations`
+      )
+    );
+  }
+
+  function useStationWhenAsked(): void {
+    const input = inputReader.read();
+    const isPressing = input.wantsToUseStation;
+    const hasJustPressed = isPressing && !wasUsingStationLastFrame;
+    wasUsingStationLastFrame = isPressing;
+
+    if (!hasJustPressed) {
+      return;
+    }
+
+    const station = findStationWithinReach(
+      stations,
+      player.horizontalPosition,
+      player.verticalPosition
+    );
+
+    if (!station) {
+      return;
+    }
+
+    const message = useStation(player, station);
+    sound.play("roomCleared");
+    burstParticles(
+      particles,
+      station.horizontalPosition,
+      station.verticalPosition - 8,
+      16,
+      "#F5D18A",
+      140
+    );
+    handlers.onStationUsed(message);
   }
 
   function spawnForCurrentRoom(): void {
@@ -221,6 +272,7 @@ export function runCombatLoop(
     particles.length = 0;
     dyingEnemies = [];
     scatterPropsForCurrentRoom();
+    raiseStationsForCurrentRoom();
     spawnForCurrentRoom();
 
     if (cameFrom) {
@@ -554,6 +606,7 @@ export function runCombatLoop(
     drawRoomTiles(context, tileMap, sheets, theme);
     drawTorchGlow(context, torches, elapsedSeconds);
     drawProps(context, props, propSheets);
+    drawStations(context, stations, stationSheets, elapsedSeconds);
 
     if (currentRoom.purpose === "start" || currentRoom.purpose === "relic") {
       drawFloorSigil(
@@ -590,6 +643,17 @@ export function runCombatLoop(
 
     drawShockwaves(context, shockwaves);
     drawEmbers(context, embers);
+
+    const stationInReach = findStationWithinReach(
+      stations,
+      player.horizontalPosition,
+      player.verticalPosition
+    );
+
+    if (stationInReach) {
+      drawStationPrompt(context, stationInReach);
+    }
+
     context.restore();
 
     drawCombatHud(
@@ -665,6 +729,8 @@ export function runCombatLoop(
       ) {
         sound.play("hitConnects");
       }
+      useStationWhenAsked();
+      countdownSharpenedWeapon(player, secondsElapsed);
       applyEnemyContactDamage();
       applyProjectileDamage();
       applyFireContactDamage();
@@ -716,6 +782,7 @@ export function runCombatLoop(
       )
     : [];
   scatterPropsForCurrentRoom();
+  raiseStationsForCurrentRoom();
   spawnForCurrentRoom();
   handlers.onRoomEntered(currentRoom, countClearedRooms());
   animationHandle = window.requestAnimationFrame(renderFrame);
