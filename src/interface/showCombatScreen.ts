@@ -11,6 +11,7 @@ import { loadLpcCharacter } from "../rendering/loadLpcCharacter";
 import { chooseAppearanceFromAddress, describeAppearance } from "../game/chooseAppearanceFromAddress";
 import { DEMO_WALLET_ADDRESS } from "../constants/characterAppearance";
 import { loadPropSheets } from "../rendering/loadPropSheets";
+import { loadStationSheets } from "../rendering/loadStationSheets";
 import { loadTileSheets } from "../rendering/loadTileSheets";
 import { runCombatLoop } from "../game/runCombatLoop";
 import { showDeathScreen } from "./showDeathScreen";
@@ -73,9 +74,10 @@ export function showCombatScreen(
     loadTileSheets(),
     loadLpcCharacter(appearance),
     loadEnemySprites(),
-    loadPropSheets()
+    loadPropSheets(),
+    loadStationSheets()
   ])
-    .then(([sheets, heroSprites, enemySprites, propSheets]) => {
+    .then(([sheets, heroSprites, enemySprites, propSheets, stationSheets]) => {
       runCombatLoop(
         canvas,
         player,
@@ -85,11 +87,15 @@ export function showCombatScreen(
         heroSprites,
         enemySprites,
         propSheets,
+        stationSheets,
         {
         onRoomEntered: (room, clearedCount) => {
           status.textContent =
             `${room.purpose} · ${clearedCount} of ${floor.rooms.length} cleared · ` +
             describeAppearance(appearance);
+        },
+        onStationUsed: (message) => {
+          status.textContent = message;
         },
         onFloorCompleted: (clearedCount, kills) => {
           finishRun("floorCleared", clearedCount, kills);
