@@ -97,6 +97,50 @@
   color: var(--colour-surface);
 }
 
+.network-indicator-waiting::after {
+  color: var(--colour-text-faint);
+  animation: network-indicator-pulse 1.4s steps(2, end) infinite;
+}
+
+.network-indicator-reached::after {
+  color: #5b9c77;
+}
+
+.network-indicator-unreached::after {
+  color: #c4523a;
+}
+
+@keyframes network-indicator-pulse {
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.25;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+.title-screen-hint {
+  margin: 0;
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: var(--text-size-small);
+  color: var(--colour-text-faint);
+  text-transform: uppercase;
+  text-shadow: 2px 2px 0 #000;
+  opacity: 0.75;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .network-indicator-waiting::after {
+    animation: none;
+  }
+}
+
 .data-text {
   font-family: var(--font-body);
   font-size: var(--text-size-small);
