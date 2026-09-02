@@ -21,8 +21,6 @@ export interface SoundRecipe {
 
 export interface SoundEngine {
   play: (soundName: SoundName) => void;
-  startDrone: () => void;
-  stopDrone: () => void;
   toggleMute: () => boolean;
   isMuted: () => boolean;
   resumeAfterUserAction: () => void;
