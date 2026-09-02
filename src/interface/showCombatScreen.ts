@@ -12,6 +12,7 @@ import { chooseAppearanceFromAddress, describeAppearance } from "../game/chooseA
 import { DEMO_WALLET_ADDRESS } from "../constants/characterAppearance";
 import { loadPropSheets } from "../rendering/loadPropSheets";
 import { loadStationSheets } from "../rendering/loadStationSheets";
+import { loadTreeSheets } from "../rendering/loadTreeSheets";
 import { loadTileSheets } from "../rendering/loadTileSheets";
 import { runCombatLoop } from "../game/runCombatLoop";
 import { showDeathScreen } from "./showDeathScreen";
@@ -75,9 +76,10 @@ export function showCombatScreen(
     loadLpcCharacter(appearance),
     loadEnemySprites(),
     loadPropSheets(),
-    loadStationSheets()
+    loadStationSheets(),
+    loadTreeSheets()
   ])
-    .then(([sheets, heroSprites, enemySprites, propSheets, stationSheets]) => {
+    .then(([sheets, heroSprites, enemySprites, propSheets, stationSheets, treeSheets]) => {
       runCombatLoop(
         canvas,
         player,
@@ -87,6 +89,7 @@ export function showCombatScreen(
         heroSprites,
         enemySprites,
         propSheets,
+        treeSheets,
         stationSheets,
         {
         onRoomEntered: (room, clearedCount) => {
