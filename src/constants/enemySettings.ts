@@ -72,6 +72,33 @@ export const ENEMY_DEFINITIONS: Record<EnemyName, EnemyDefinition> = {
     collisionRadius: 10,
     canCastProjectiles: false,
     canHealOtherEnemies: false
+  },
+  eliteKnight: {
+    name: "eliteKnight",
+    maximumHealth: 80,
+    movementSpeed: 34,
+    contactDamage: 18,
+    collisionRadius: 8,
+    canCastProjectiles: false,
+    canHealOtherEnemies: false
+  },
+  eliteRogue: {
+    name: "eliteRogue",
+    maximumHealth: 46,
+    movementSpeed: 88,
+    contactDamage: 14,
+    collisionRadius: 7,
+    canCastProjectiles: false,
+    canHealOtherEnemies: false
+  },
+  eliteWizard: {
+    name: "eliteWizard",
+    maximumHealth: 38,
+    movementSpeed: 30,
+    contactDamage: 10,
+    collisionRadius: 7,
+    canCastProjectiles: true,
+    canHealOtherEnemies: false
   }
 };
 
@@ -82,6 +109,13 @@ export const ENEMY_NAMES_BY_STRATUM: Record<number, EnemyName[]> = {
 };
 
 export const BOSS_NAME: EnemyName = "orcWarrior";
+
+export const ELITE_NAMES_BY_STRATUM: Record<number, EnemyName[]> = {
+  1: ["eliteRogue"],
+  2: ["eliteRogue", "eliteKnight"],
+  3: ["eliteKnight", "eliteWizard"],
+  4: ["eliteKnight", "eliteWizard", "eliteRogue"]
+};
 
 export const PROJECTILE_SPEED_PIXELS_PER_SECOND = 78;
 export const PROJECTILE_LIFETIME_SECONDS = 2.6;
