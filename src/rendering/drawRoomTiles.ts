@@ -37,7 +37,11 @@ export function drawRoomTiles(
 ): void {
   const floorSheet = theme.floorSheet === "dungeon" ? sheets.dungeonSheet : sheets.floorSheet;
   const wallSheet =
-    theme.wallSheet === "wallVariations" ? sheets.wallVariationSheet : sheets.wallSheet;
+    theme.wallSheet === "wallVariations"
+      ? sheets.wallVariationSheet
+      : theme.wallSheet === "interiorWalls"
+        ? sheets.interiorWallSheet
+        : sheets.wallSheet;
 
   for (let row = 0; row < tileMap.rowCount; row++) {
     for (let column = 0; column < tileMap.columnCount; column++) {
