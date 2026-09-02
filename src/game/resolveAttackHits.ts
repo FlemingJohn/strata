@@ -14,6 +14,7 @@ import {
   SLICE_REACH_PIXELS
 } from "../constants/playerSettings";
 import { DAMAGE_MULTIPLIER_WHILE_RECOVERING } from "../constants/enemySettings";
+import { SHARPENED_DAMAGE_MULTIPLIER } from "../constants/stationSettings";
 import { KNOCKBACK_SPEED_PIXELS_PER_SECOND } from "../constants/animationSettings";
 import { burstParticles, recordHit, recordKill } from "./createImpactFeedback";
 import { createDyingEnemy } from "./createDyingEnemy";
@@ -70,9 +71,11 @@ export function resolveAttackHits(
   }
 
   const shape = ATTACK_SHAPES[player.weaponStyle];
+  const sharpenedMultiplier =
+    player.secondsOfSharpenedWeapon > 0 ? SHARPENED_DAMAGE_MULTIPLIER : 1;
   const damageMultiplier = player.equippedRelics.reduce(
     (multiplier, relic) => multiplier * relic.definition.effect.damageDealtMultiplier,
-    1
+    sharpenedMultiplier
   );
   const passesThrough = player.equippedRelics.some(
     (relic) => relic.definition.effect.attacksPassThroughEnemies
