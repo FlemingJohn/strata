@@ -1,6 +1,6 @@
 import type { EnemyName } from "./enemy";
 
-export type TileKind = "floor" | "wall" | "cursed" | "exit";
+export type TileKind = "floor" | "wall" | "cursed" | "exit" | "water";
 
 export interface RoomLayout {
   columnCount: number;
