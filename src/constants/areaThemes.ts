@@ -6,7 +6,7 @@ export interface TileCoordinate {
 export interface AreaTheme {
   name: string;
   floorSheet: "floors" | "dungeon";
-  wallSheet: "walls";
+  wallSheet: "walls" | "wallVariations";
   floorTiles: TileCoordinate[];
   wallTiles: TileCoordinate[];
   hasFires: boolean;
@@ -67,15 +67,6 @@ const TIMBER_WALL: TileCoordinate[] = [
   { column: 4, row: 2 }
 ];
 
-const WARM_BROWN_WALL: TileCoordinate[] = [
-  { column: 4, row: 5 },
-  { column: 1, row: 6 },
-  { column: 2, row: 6 },
-  { column: 3, row: 6 },
-  { column: 1, row: 7 },
-  { column: 3, row: 7 }
-];
-
 const BLUE_GREY_WALL: TileCoordinate[] = [
   { column: 8, row: 1 },
   { column: 9, row: 1 },
@@ -94,6 +85,33 @@ const NEAR_BLACK_WALL: TileCoordinate[] = [
   { column: 14, row: 7 }
 ];
 
+const BROWN_VARIATION_WALL: TileCoordinate[] = [
+  { column: 1, row: 0 },
+  { column: 2, row: 0 },
+  { column: 3, row: 0 },
+  { column: 1, row: 1 },
+  { column: 3, row: 1 },
+  { column: 1, row: 2 }
+];
+
+const SLATE_VARIATION_WALL: TileCoordinate[] = [
+  { column: 1, row: 10 },
+  { column: 2, row: 10 },
+  { column: 3, row: 10 },
+  { column: 1, row: 11 },
+  { column: 3, row: 11 },
+  { column: 1, row: 12 }
+];
+
+const EARTH_VARIATION_WALL: TileCoordinate[] = [
+  { column: 1, row: 20 },
+  { column: 2, row: 20 },
+  { column: 3, row: 20 },
+  { column: 1, row: 21 },
+  { column: 3, row: 21 },
+  { column: 1, row: 22 }
+];
+
 export const AREA_THEME_BY_STRATUM: Record<number, AreaTheme> = {
   1: {
     name: "Surface",
@@ -107,30 +125,40 @@ export const AREA_THEME_BY_STRATUM: Record<number, AreaTheme> = {
   2: {
     name: "The Boom",
     floorSheet: "floors",
-    wallSheet: "walls",
+    wallSheet: "wallVariations",
     floorTiles: SAND_FLOOR,
-    wallTiles: WARM_BROWN_WALL,
+    wallTiles: BROWN_VARIATION_WALL,
     hasFires: false,
     lightColour: "#FFD9A0"
   },
   3: {
     name: "The Winter",
     floorSheet: "floors",
-    wallSheet: "walls",
+    wallSheet: "wallVariations",
     floorTiles: ICE_FLOOR,
-    wallTiles: BLUE_GREY_WALL,
+    wallTiles: SLATE_VARIATION_WALL,
     hasFires: false,
     lightColour: "#CFE4FF"
   },
   4: {
     name: "Bedrock",
     floorSheet: "floors",
-    wallSheet: "walls",
+    wallSheet: "wallVariations",
     floorTiles: STONE_FLOOR,
-    wallTiles: NEAR_BLACK_WALL,
+    wallTiles: EARTH_VARIATION_WALL,
     hasFires: false,
     lightColour: "#FFD9A0"
   }
+};
+
+export const VAULT_THEME: AreaTheme = {
+  name: "The Vault",
+  floorSheet: "dungeon",
+  wallSheet: "walls",
+  floorTiles: FURNACE_FLOOR,
+  wallTiles: BLUE_GREY_WALL,
+  hasFires: false,
+  lightColour: "#BFD8FF"
 };
 
 export const FURNACE_THEME: AreaTheme = {
@@ -143,9 +171,13 @@ export const FURNACE_THEME: AreaTheme = {
   lightColour: "#FF8C32"
 };
 
-export function findAreaTheme(stratumNumber: number, isBossRoom: boolean): AreaTheme {
-  if (isBossRoom) {
+export function findAreaTheme(stratumNumber: number, roomPurpose: string): AreaTheme {
+  if (roomPurpose === "boss") {
     return FURNACE_THEME;
+  }
+
+  if (roomPurpose === "relic") {
+    return VAULT_THEME;
   }
 
   return AREA_THEME_BY_STRATUM[stratumNumber] ?? AREA_THEME_BY_STRATUM[4];
