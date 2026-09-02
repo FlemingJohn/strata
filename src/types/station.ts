@@ -6,13 +6,19 @@ export type StationReward =
   | "sharpensWeapon"
   | "raisesMaximumHealth";
 
+export interface StationAppearance {
+  sheetName: string;
+  sheetPath: string;
+  frameWidth: number;
+  frameHeight: number;
+  frameCount: number;
+  framesPerSecond: number;
+}
+
 export interface StationDefinition {
   kind: StationKind;
   label: string;
-  sheetPath: string;
-  frameSize: number;
-  frameCount: number;
-  framesPerSecond: number;
+  appearances: StationAppearance[];
   reward: StationReward;
   rewardAmount: number;
   reachPixels: number;
@@ -20,9 +26,10 @@ export interface StationDefinition {
 
 export interface PlacedStation {
   definition: StationDefinition;
+  appearance: StationAppearance;
   horizontalPosition: number;
   verticalPosition: number;
   hasBeenUsed: boolean;
 }
 
-export type StationSheets = Record<StationKind, HTMLImageElement | null>;
+export type StationSheets = Record<string, HTMLImageElement>;
