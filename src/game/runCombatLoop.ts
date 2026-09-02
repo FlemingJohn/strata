@@ -64,6 +64,13 @@ import { drawSurvivorPrompt, drawSurvivors } from "../rendering/drawSurvivors";
 import type { AnimatedPropSheets, PlacedAnimatedProp } from "../types/animatedProp";
 import { placeAnimatedProps } from "./placeAnimatedProps";
 import { drawAnimatedProps } from "../rendering/drawAnimatedProps";
+import type { LandmarkSheets, PlacedLandmark } from "../types/landmark";
+import { placeLandmark } from "./placeLandmark";
+import { drawLandmark } from "../rendering/drawLandmark";
+import {
+  FURNACE_LANDMARK_NAMES,
+  LANDMARK_NAMES_BY_STRATUM
+} from "../constants/landmarkSettings";
 import {
   SURVIVOR_LABELS,
   SURVIVOR_TALK_REACH_PIXELS
@@ -128,6 +135,7 @@ export function runCombatLoop(
   stationSheets: StationSheets,
   survivorSprites: SurvivorSpriteLibrary,
   animatedPropSheets: AnimatedPropSheets,
+  landmarkSheets: LandmarkSheets,
   handlers: CombatLoopHandlers
 ): CombatLoopController {
   const context = canvas.getContext("2d");
@@ -154,6 +162,7 @@ export function runCombatLoop(
   let trees: PlacedProp[] = [];
   let survivors: Survivor[] = [];
   let animatedProps: PlacedAnimatedProp[] = [];
+  let landmark: PlacedLandmark | null = null;
   let wasUsingStationLastFrame = false;
   const embers: Ember[] = [];
   let dyingEnemies: DyingEnemy[] = [];
@@ -196,6 +205,24 @@ export function runCombatLoop(
       findPropSheetNames(),
       createSeededRandomFromHash(
         `${floor.description.layoutSeed}:${currentRoom.position.column}:${currentRoom.position.row}:props`
+      )
+    );
+  }
+
+  function findLandmarkNames(): string[] {
+    if (theme.hasFires) {
+      return FURNACE_LANDMARK_NAMES;
+    }
+
+    return LANDMARK_NAMES_BY_STRATUM[floor.description.stratumNumber] ?? LANDMARK_NAMES_BY_STRATUM[4];
+  }
+
+  function raiseLandmarkForCurrentRoom(): void {
+    landmark = placeLandmark(
+      tileMap,
+      findLandmarkNames(),
+      createSeededRandomFromHash(
+        `${floor.description.layoutSeed}:${currentRoom.position.column}:${currentRoom.position.row}:landmark`
       )
     );
   }
@@ -342,6 +369,7 @@ export function runCombatLoop(
     particles.length = 0;
     dyingEnemies = [];
     scatterPropsForCurrentRoom();
+    raiseLandmarkForCurrentRoom();
     setAnimatedPropsForCurrentRoom();
     gatherSurvivorsForCurrentRoom();
     plantTreesForCurrentRoom();
@@ -678,6 +706,7 @@ export function runCombatLoop(
     context.clearRect(-16, -16, canvas.width + 32, canvas.height + 32);
     drawRoomTiles(context, tileMap, sheets, theme);
     drawTorchGlow(context, torches, elapsedSeconds);
+    drawLandmark(context, landmark, landmarkSheets);
     drawProps(context, props, propSheets);
     drawAnimatedProps(context, animatedProps, animatedPropSheets, elapsedSeconds);
     drawStations(context, stations, stationSheets, elapsedSeconds);
@@ -870,6 +899,7 @@ export function runCombatLoop(
       )
     : [];
   scatterPropsForCurrentRoom();
+  raiseLandmarkForCurrentRoom();
   setAnimatedPropsForCurrentRoom();
   gatherSurvivorsForCurrentRoom();
   plantTreesForCurrentRoom();
