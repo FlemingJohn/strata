@@ -11,14 +11,16 @@ import {
 export function drawFireSprites(
   context: CanvasRenderingContext2D,
   fireSheet: HTMLImageElement,
+  secondFireSheet: HTMLImageElement,
   smokeSheet: HTMLImageElement,
   fires: FirePlacement[],
   animationFrameIndex: number
 ): void {
-  const fireFrames = Math.max(1, Math.round(fireSheet.naturalWidth / FIRE_FRAME_WIDTH));
   const smokeFrames = Math.max(1, Math.round(smokeSheet.naturalWidth / FIRE_FRAME_WIDTH));
 
   fires.forEach((fire, index) => {
+    const chosenFireSheet = index % 2 === 0 ? fireSheet : secondFireSheet;
+    const fireFrames = Math.max(1, Math.round(chosenFireSheet.naturalWidth / FIRE_FRAME_WIDTH));
     const smokeFrame = (animationFrameIndex + index) % smokeFrames;
     context.globalAlpha = 0.5;
     context.drawImage(
@@ -36,15 +38,15 @@ export function drawFireSprites(
 
     const fireFrame = (animationFrameIndex + index * 2) % fireFrames;
     context.drawImage(
-      fireSheet,
+      chosenFireSheet,
       fireFrame * FIRE_FRAME_WIDTH,
       0,
       FIRE_FRAME_WIDTH,
-      fireSheet.naturalHeight,
+      chosenFireSheet.naturalHeight,
       Math.round(fire.horizontalPosition - FIRE_FRAME_WIDTH / 2),
-      Math.round(fire.verticalPosition - fireSheet.naturalHeight),
+      Math.round(fire.verticalPosition - chosenFireSheet.naturalHeight),
       FIRE_FRAME_WIDTH,
-      fireSheet.naturalHeight
+      chosenFireSheet.naturalHeight
     );
   });
 }
