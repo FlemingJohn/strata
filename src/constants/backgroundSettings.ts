@@ -18,10 +18,6 @@ export const DUST_COLOUR = "#EDE4D8";
 export const YEAR_LABEL_OPACITY = 0.34;
 export const YEAR_LABEL_FONT = "6px monospace";
 
-export const READABILITY_OVERLAY_COLOUR = "rgba(20, 17, 15, 0.62)";
-export const VIGNETTE_INNER_RATIO = 0.32;
-export const VIGNETTE_OUTER_COLOUR = "rgba(8, 6, 5, 0.9)";
-
 export const BACKGROUND_SEED = 20260906;
 
 export const SHAFT_TORCH_EVERY_ROWS = 6;
