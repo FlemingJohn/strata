@@ -12,13 +12,12 @@ export function drawStations(
   elapsedSeconds: number
 ): void {
   for (const station of stations) {
-    const sheet = sheets[station.definition.kind];
+    const appearance = station.appearance;
+    const sheet = sheets[appearance.sheetName];
 
     if (!sheet) {
       continue;
     }
-
-    const definition = station.definition;
 
     if (!station.hasBeenUsed) {
       const radius =
@@ -47,19 +46,19 @@ export function drawStations(
     }
 
     const frameIndex =
-      Math.floor(elapsedSeconds * definition.framesPerSecond) % definition.frameCount;
+      Math.floor(elapsedSeconds * appearance.framesPerSecond) % appearance.frameCount;
 
     context.globalAlpha = station.hasBeenUsed ? 0.45 : 1;
     context.drawImage(
       sheet,
-      frameIndex * definition.frameSize,
+      frameIndex * appearance.frameWidth,
       0,
-      definition.frameSize,
-      definition.frameSize,
-      Math.round(station.horizontalPosition - definition.frameSize / 2),
-      Math.round(station.verticalPosition - definition.frameSize + 6),
-      definition.frameSize,
-      definition.frameSize
+      appearance.frameWidth,
+      appearance.frameHeight,
+      Math.round(station.horizontalPosition - appearance.frameWidth / 2),
+      Math.round(station.verticalPosition - appearance.frameHeight + 6),
+      appearance.frameWidth,
+      appearance.frameHeight
     );
     context.globalAlpha = 1;
   }
