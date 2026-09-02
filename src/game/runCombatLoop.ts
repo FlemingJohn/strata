@@ -18,7 +18,14 @@ import {
   updateParticles
 } from "./createImpactFeedback";
 import { drawCombatHud } from "../rendering/drawCombatHud";
-import { drawEnemies, drawParticles, drawProjectiles } from "../rendering/drawEnemies";
+import {
+  drawDyingEnemies,
+  drawEnemies,
+  drawParticles,
+  drawProjectiles
+} from "../rendering/drawEnemies";
+import type { DyingEnemy } from "../types/dyingEnemy";
+import type { PlacedProp, PropSheets } from "../types/prop";
 import type { Ember, FirePlacement } from "../types/fire";
 import type { Shockwave } from "../types/ability";
 import { LPC_FRAME_SIZE, LPC_FRAMES_PER_SECOND, LPC_GROUND_OFFSET_PIXELS } from "../constants/lpcCharacterSettings";
@@ -34,12 +41,19 @@ import {
 import { findAnimationForPlayer } from "../game/findAnimationForPlayer";
 import { generateRoomTiles } from "./generateRoomTiles";
 import { resolveAttackHits } from "./resolveAttackHits";
-import { spawnEnemiesForRoom } from "./createEnemy";
+import { chooseEliteNames, spawnEnemiesForRoom } from "./createEnemy";
+import { updateDyingEnemies } from "./createDyingEnemy";
 import { applyDamageToPlayer, updatePlayer } from "./updatePlayer";
 import { findSoundEngine } from "../audio/sharedSoundEngine";
 import { findAreaTheme } from "../constants/areaThemes";
 import { findStratumForBlock } from "./findStratumForBlock";
 import { placeFires } from "./placeFires";
+import { placeProps } from "./placeProps";
+import { drawProps } from "../rendering/drawProps";
+import {
+  FURNACE_PROP_SHEETS,
+  PROP_SHEETS_BY_STRATUM
+} from "../constants/propSettings";
 import {
   createShockwave,
   drawShockwaves,
@@ -90,6 +104,7 @@ export function runCombatLoop(
   sheets: TileSheets,
   heroSprites: LpcCharacterSheets,
   enemySprites: EnemySpriteLibrary,
+  propSheets: PropSheets,
   handlers: CombatLoopHandlers
 ): CombatLoopController {
   const context = canvas.getContext("2d");
@@ -111,7 +126,9 @@ export function runCombatLoop(
   let enemies: EnemyCharacter[] = [];
   let torches = placeTorches(tileMap);
   let fires: FirePlacement[] = [];
+  let props: PlacedProp[] = [];
   const embers: Ember[] = [];
+  let dyingEnemies: DyingEnemy[] = [];
   const shockwaves: Shockwave[] = [];
   let wasCastingLastFrame = false;
   let secondsUntilBossSlam = SLAM_COOLDOWN_SECONDS;
@@ -137,6 +154,24 @@ export function runCombatLoop(
     return floor.rooms.filter((room) => room.hasBeenCleared).length;
   }
 
+  function findPropSheetNames(): string[] {
+    if (theme.hasFires) {
+      return FURNACE_PROP_SHEETS;
+    }
+
+    return PROP_SHEETS_BY_STRATUM[floor.description.stratumNumber] ?? PROP_SHEETS_BY_STRATUM[4];
+  }
+
+  function scatterPropsForCurrentRoom(): void {
+    props = placeProps(
+      tileMap,
+      findPropSheetNames(),
+      createSeededRandomFromHash(
+        `${floor.description.layoutSeed}:${currentRoom.position.column}:${currentRoom.position.row}:props`
+      )
+    );
+  }
+
   function spawnForCurrentRoom(): void {
     if (currentRoom.hasBeenCleared) {
       enemies = [];
@@ -147,8 +182,17 @@ export function runCombatLoop(
       `${floor.description.layoutSeed}:${currentRoom.position.column}:${currentRoom.position.row}:spawn`
     );
 
+    const eliteNames =
+      currentRoom.purpose === "combat"
+        ? chooseEliteNames(
+            floor.description.stratumNumber,
+            floor.description.eliteCount,
+            nextRandomNumber
+          )
+        : [];
+
     enemies = spawnEnemiesForRoom(
-      currentRoom.enemyNames,
+      currentRoom.enemyNames.concat(eliteNames),
       tileMap,
       floor.description.difficultyMultiplier,
       nextRandomNumber
@@ -175,6 +219,8 @@ export function runCombatLoop(
       : [];
     projectiles = [];
     particles.length = 0;
+    dyingEnemies = [];
+    scatterPropsForCurrentRoom();
     spawnForCurrentRoom();
 
     if (cameFrom) {
@@ -507,6 +553,7 @@ export function runCombatLoop(
     context.clearRect(-16, -16, canvas.width + 32, canvas.height + 32);
     drawRoomTiles(context, tileMap, sheets, theme);
     drawTorchGlow(context, torches, elapsedSeconds);
+    drawProps(context, props, propSheets);
 
     if (currentRoom.purpose === "start" || currentRoom.purpose === "relic") {
       drawFloorSigil(
@@ -529,6 +576,7 @@ export function runCombatLoop(
     }
 
     drawEntityShadow(context, player.horizontalPosition, player.verticalPosition, 14);
+    drawDyingEnemies(context, dyingEnemies, enemySprites);
     drawEnemies(context, enemies, enemySprites, animationFrameIndex);
     drawPlayer();
     drawProjectiles(context, projectiles);
@@ -604,7 +652,8 @@ export function runCombatLoop(
         enemies,
         particles,
         feedback,
-        respectsReducedMotion
+        respectsReducedMotion,
+        dyingEnemies
       );
       totalKills += killsThisFrame;
 
@@ -624,6 +673,11 @@ export function runCombatLoop(
       updateShockwaves(shockwaves, secondsElapsed);
       applyShockwaveDamage();
       updateParticles(particles, secondsElapsed);
+      updateDyingEnemies(
+        dyingEnemies,
+        (enemyName) => enemySprites[enemyName].dying.frameCount,
+        secondsElapsed
+      );
 
       if (enemies.length === 0) {
         grantRoomClearedReward();
@@ -661,6 +715,7 @@ export function runCombatLoop(
         )
       )
     : [];
+  scatterPropsForCurrentRoom();
   spawnForCurrentRoom();
   handlers.onRoomEntered(currentRoom, countClearedRooms());
   animationHandle = window.requestAnimationFrame(renderFrame);
