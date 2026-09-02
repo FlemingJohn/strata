@@ -1,11 +1,8 @@
 import type { SoundName, SoundRecipe } from "../types/sound";
 
 export const EFFECT_VOLUME = 0.22;
-export const DRONE_VOLUME = 0.05;
 export const MUTE_STORAGE_KEY = "strataMuted";
 export const MUTE_KEY = "m";
-
-export const DRONE_BASE_FREQUENCIES = [55, 82.5, 110];
 
 export const SOUND_RECIPES: Record<SoundName, SoundRecipe> = {
   swing: {
