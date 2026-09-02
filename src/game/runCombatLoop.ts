@@ -54,6 +54,9 @@ import type { PlacedStation, StationSheets } from "../types/station";
 import { findStationWithinReach, placeStations } from "./placeStations";
 import { drawStationPrompt, drawStations } from "../rendering/drawStations";
 import { countdownSharpenedWeapon, useStation } from "./useStation";
+import { plantTrees } from "./plantTrees";
+import { drawTrees } from "../rendering/drawTrees";
+import { TREE_STRATUM_NUMBER } from "../constants/treeSettings";
 import {
   FURNACE_PROP_SHEETS,
   PROP_SHEETS_BY_STRATUM
@@ -110,6 +113,7 @@ export function runCombatLoop(
   heroSprites: LpcCharacterSheets,
   enemySprites: EnemySpriteLibrary,
   propSheets: PropSheets,
+  treeSheets: PropSheets,
   stationSheets: StationSheets,
   handlers: CombatLoopHandlers
 ): CombatLoopController {
@@ -134,6 +138,7 @@ export function runCombatLoop(
   let fires: FirePlacement[] = [];
   let props: PlacedProp[] = [];
   let stations: PlacedStation[] = [];
+  let trees: PlacedProp[] = [];
   let wasUsingStationLastFrame = false;
   const embers: Ember[] = [];
   let dyingEnemies: DyingEnemy[] = [];
@@ -178,6 +183,18 @@ export function runCombatLoop(
         `${floor.description.layoutSeed}:${currentRoom.position.column}:${currentRoom.position.row}:props`
       )
     );
+  }
+
+  function plantTreesForCurrentRoom(): void {
+    trees =
+      floor.description.stratumNumber === TREE_STRATUM_NUMBER && currentRoom.purpose !== "boss"
+        ? plantTrees(
+            tileMap,
+            createSeededRandomFromHash(
+              `${floor.description.layoutSeed}:${currentRoom.position.column}:${currentRoom.position.row}:trees`
+            )
+          )
+        : [];
   }
 
   function raiseStationsForCurrentRoom(): void {
@@ -272,6 +289,7 @@ export function runCombatLoop(
     particles.length = 0;
     dyingEnemies = [];
     scatterPropsForCurrentRoom();
+    plantTreesForCurrentRoom();
     raiseStationsForCurrentRoom();
     spawnForCurrentRoom();
 
@@ -607,6 +625,7 @@ export function runCombatLoop(
     drawTorchGlow(context, torches, elapsedSeconds);
     drawProps(context, props, propSheets);
     drawStations(context, stations, stationSheets, elapsedSeconds);
+    drawTrees(context, trees, treeSheets);
 
     if (currentRoom.purpose === "start" || currentRoom.purpose === "relic") {
       drawFloorSigil(
@@ -782,6 +801,7 @@ export function runCombatLoop(
       )
     : [];
   scatterPropsForCurrentRoom();
+  plantTreesForCurrentRoom();
   raiseStationsForCurrentRoom();
   spawnForCurrentRoom();
   handlers.onRoomEntered(currentRoom, countClearedRooms());
