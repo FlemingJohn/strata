@@ -15,6 +15,7 @@ import { loadStationSheets } from "../rendering/loadStationSheets";
 import { loadTreeSheets } from "../rendering/loadTreeSheets";
 import { loadSurvivorSprites } from "../rendering/loadSurvivorSprites";
 import { loadAnimatedPropSheets } from "../rendering/loadAnimatedPropSheets";
+import { loadLandmarkSheets } from "../rendering/loadLandmarkSheets";
 import { loadTileSheets } from "../rendering/loadTileSheets";
 import { runCombatLoop } from "../game/runCombatLoop";
 import { showDeathScreen } from "./showDeathScreen";
@@ -81,7 +82,8 @@ export function showCombatScreen(
     loadStationSheets(),
     loadTreeSheets(),
     loadSurvivorSprites(),
-    loadAnimatedPropSheets()
+    loadAnimatedPropSheets(),
+    loadLandmarkSheets()
   ])
     .then((loaded) => {
       const [
@@ -92,7 +94,8 @@ export function showCombatScreen(
         stationSheets,
         treeSheets,
         survivorSprites,
-        animatedPropSheets
+        animatedPropSheets,
+        landmarkSheets
       ] = loaded;
 
       runCombatLoop(
@@ -108,6 +111,7 @@ export function showCombatScreen(
         stationSheets,
         survivorSprites,
         animatedPropSheets,
+        landmarkSheets,
         {
           onRoomEntered: (room, clearedCount) => {
             status.textContent =
