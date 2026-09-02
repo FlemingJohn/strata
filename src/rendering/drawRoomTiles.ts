@@ -2,6 +2,7 @@ import type { AreaTheme, TileCoordinate } from "../constants/areaThemes";
 import type { RoomTileMap } from "../types/dungeon";
 import type { TileSheets } from "./loadTileSheets";
 import { EXIT_TILE_COLUMN, EXIT_TILE_ROW, TILE_SIZE } from "../constants/tilesetSettings";
+import { findWaterTile } from "./findWaterTile";
 
 function chooseVariantIndex(column: number, row: number, variantCount: number): number {
   const scrambled = Math.imul(column + 1, 73856093) ^ Math.imul(row + 1, 19349663);
@@ -43,6 +44,13 @@ export function drawRoomTiles(
       if (tile === "wall") {
         const wallTile = theme.wallTiles[chooseVariantIndex(column, row, theme.wallTiles.length)];
         drawTile(context, sheets.wallSheet, wallTile, column, row);
+        continue;
+      }
+
+      if (tile === "water") {
+        const floorTile = theme.floorTiles[chooseVariantIndex(column, row, theme.floorTiles.length)];
+        drawTile(context, floorSheet, floorTile, column, row);
+        drawTile(context, sheets.waterSheet, findWaterTile(tileMap, column, row), column, row);
         continue;
       }
 
