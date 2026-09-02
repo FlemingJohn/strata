@@ -123,6 +123,92 @@ export const LANDMARK_DEFINITIONS: Record<string, LandmarkDefinition> = {
       { left: 0, top: 81, width: 112, height: 75 }
     ]
   },
+  alchemyBench: {
+    name: "alchemyBench",
+    sheetPath: `${STATION_FOLDER}/Alchemy/Alchemy_Table_01-Sheet.png`,
+    regions: [
+      { left: 0, top: 0, width: 64, height: 64 },
+      { left: 64, top: 64, width: 64, height: 64 },
+      { left: 128, top: 128, width: 64, height: 64 },
+      { left: 0, top: 192, width: 64, height: 64 },
+      { left: 64, top: 256, width: 64, height: 64 },
+      { left: 128, top: 320, width: 64, height: 64 }
+    ]
+  },
+  alchemyShelf: {
+    name: "alchemyShelf",
+    sheetPath: `${STATION_FOLDER}/Alchemy/Alchemy_Table_02-Sheet.png`,
+    regions: [
+      { left: 0, top: 0, width: 48, height: 64 },
+      { left: 96, top: 64, width: 48, height: 64 },
+      { left: 192, top: 128, width: 48, height: 64 },
+      { left: 288, top: 192, width: 48, height: 64 }
+    ]
+  },
+  alchemyVault: {
+    name: "alchemyVault",
+    sheetPath: `${STATION_FOLDER}/Alchemy/Alchemy_Table_03-Sheet.png`,
+    regions: [
+      { left: 0, top: 0, width: 80, height: 80 },
+      { left: 80, top: 80, width: 80, height: 80 },
+      { left: 160, top: 160, width: 80, height: 80 },
+      { left: 240, top: 240, width: 80, height: 80 }
+    ]
+  },
+  greatForge: {
+    name: "greatForge",
+    sheetPath: `${STATION_FOLDER}/Anvil/Anvil_03-Sheet.png`,
+    regions: [
+      { left: 0, top: 0, width: 128, height: 140 },
+      { left: 256, top: 140, width: 128, height: 140 },
+      { left: 512, top: 280, width: 128, height: 140 }
+    ]
+  },
+  brickStack: {
+    name: "brickStack",
+    sheetPath: `${STATION_FOLDER}/Furnace/Bricks_03-Sheet.png`,
+    regions: [
+      { left: 0, top: 4, width: 48, height: 60 },
+      { left: 48, top: 4, width: 48, height: 60 },
+      { left: 0, top: 68, width: 48, height: 60 },
+      { left: 48, top: 68, width: 48, height: 60 }
+    ]
+  },
+  ironStack: {
+    name: "ironStack",
+    sheetPath: `${STATION_FOLDER}/Furnace/Iron_01-Sheet.png`,
+    regions: [
+      { left: 0, top: 3, width: 32, height: 45 },
+      { left: 32, top: 3, width: 32, height: 45 },
+      { left: 0, top: 51, width: 32, height: 45 },
+      { left: 32, top: 51, width: 32, height: 45 }
+    ]
+  },
+  ironTower: {
+    name: "ironTower",
+    sheetPath: `${STATION_FOLDER}/Furnace/Iron_03-Sheet.png`,
+    regions: [
+      { left: 0, top: 0, width: 48, height: 64 },
+      { left: 48, top: 0, width: 48, height: 64 },
+      { left: 0, top: 64, width: 48, height: 64 },
+      { left: 48, top: 64, width: 48, height: 64 }
+    ]
+  },
+  stoneStack: {
+    name: "stoneStack",
+    sheetPath: `${STATION_FOLDER}/Furnace/Stone_01-Sheet.png`,
+    regions: [
+      { left: 0, top: 10, width: 32, height: 38 },
+      { left: 32, top: 10, width: 32, height: 38 },
+      { left: 0, top: 58, width: 32, height: 38 },
+      { left: 32, top: 58, width: 32, height: 38 }
+    ]
+  },
+  millStump: {
+    name: "millStump",
+    sheetPath: `${STATION_FOLDER}/Sawmill/Level_1.png`,
+    regions: [{ left: 0, top: 0, width: 32, height: 32 }]
+  },
   broadCanopy: {
     name: "broadCanopy",
     sheetPath: `${TREE_FOLDER}/Model_01/Size_04.png`,
@@ -156,10 +242,10 @@ export const LANDMARK_DEFINITIONS: Record<string, LandmarkDefinition> = {
 };
 
 export const LANDMARK_NAMES_BY_STRATUM: Record<number, string[]> = {
-  1: ["broadCanopy", "slenderCanopy", "towerCanopy", "millHouse"],
-  2: ["sawmill", "workbench", "greatMill", "brickKiln"],
-  3: ["anvil", "workbench", "smallAnvil", "brickForge"],
-  4: ["anvil", "furnace", "greatAnvil", "stoneForge"]
+  1: ["broadCanopy", "slenderCanopy", "towerCanopy", "millHouse", "millStump"],
+  2: ["sawmill", "workbench", "greatMill", "brickKiln", "brickStack", "millStump"],
+  3: ["anvil", "workbench", "smallAnvil", "brickForge", "alchemyBench", "stoneStack"],
+  4: ["anvil", "furnace", "greatAnvil", "stoneForge", "alchemyVault", "ironStack"]
 };
 
 export const FURNACE_LANDMARK_NAMES = [
@@ -167,7 +253,10 @@ export const FURNACE_LANDMARK_NAMES = [
   "anvil",
   "ironForge",
   "stoneChimney",
-  "greatAnvil"
+  "greatAnvil",
+  "greatForge",
+  "ironTower",
+  "alchemyShelf"
 ];
 export const CHANCE_A_ROOM_HOLDS_A_LANDMARK = 0.55;
 export const LANDMARK_TOP_BAND_FRACTION = 0.42;
