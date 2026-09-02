@@ -13,6 +13,7 @@ import { DEMO_WALLET_ADDRESS } from "../constants/characterAppearance";
 import { loadPropSheets } from "../rendering/loadPropSheets";
 import { loadStationSheets } from "../rendering/loadStationSheets";
 import { loadTreeSheets } from "../rendering/loadTreeSheets";
+import { loadSurvivorSprites } from "../rendering/loadSurvivorSprites";
 import { loadTileSheets } from "../rendering/loadTileSheets";
 import { runCombatLoop } from "../game/runCombatLoop";
 import { showDeathScreen } from "./showDeathScreen";
@@ -77,9 +78,20 @@ export function showCombatScreen(
     loadEnemySprites(),
     loadPropSheets(),
     loadStationSheets(),
-    loadTreeSheets()
+    loadTreeSheets(),
+    loadSurvivorSprites()
   ])
-    .then(([sheets, heroSprites, enemySprites, propSheets, stationSheets, treeSheets]) => {
+    .then((loaded) => {
+      const [
+        sheets,
+        heroSprites,
+        enemySprites,
+        propSheets,
+        stationSheets,
+        treeSheets,
+        survivorSprites
+      ] = loaded;
+
       runCombatLoop(
         canvas,
         player,
@@ -91,22 +103,24 @@ export function showCombatScreen(
         propSheets,
         treeSheets,
         stationSheets,
+        survivorSprites,
         {
-        onRoomEntered: (room, clearedCount) => {
-          status.textContent =
-            `${room.purpose} · ${clearedCount} of ${floor.rooms.length} cleared · ` +
-            describeAppearance(appearance);
-        },
-        onStationUsed: (message) => {
-          status.textContent = message;
-        },
-        onFloorCompleted: (clearedCount, kills) => {
-          finishRun("floorCleared", clearedCount, kills);
-        },
-        onPlayerDied: (roomsCleared, kills) => {
-          finishRun("died", roomsCleared, kills);
+          onRoomEntered: (room, clearedCount) => {
+            status.textContent =
+              `${room.purpose} · ${clearedCount} of ${floor.rooms.length} cleared · ` +
+              describeAppearance(appearance);
+          },
+          onStationUsed: (message) => {
+            status.textContent = message;
+          },
+          onFloorCompleted: (clearedCount, kills) => {
+            finishRun("floorCleared", clearedCount, kills);
+          },
+          onPlayerDied: (roomsCleared, kills) => {
+            finishRun("died", roomsCleared, kills);
+          }
         }
-      });
+      );
     })
     .catch((failure) => {
       status.textContent = failure instanceof Error ? failure.message : String(failure);
