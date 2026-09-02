@@ -36,6 +36,8 @@ export function drawRoomTiles(
   theme: AreaTheme
 ): void {
   const floorSheet = theme.floorSheet === "dungeon" ? sheets.dungeonSheet : sheets.floorSheet;
+  const wallSheet =
+    theme.wallSheet === "wallVariations" ? sheets.wallVariationSheet : sheets.wallSheet;
 
   for (let row = 0; row < tileMap.rowCount; row++) {
     for (let column = 0; column < tileMap.columnCount; column++) {
@@ -43,7 +45,7 @@ export function drawRoomTiles(
 
       if (tile === "wall") {
         const wallTile = theme.wallTiles[chooseVariantIndex(column, row, theme.wallTiles.length)];
-        drawTile(context, sheets.wallSheet, wallTile, column, row);
+        drawTile(context, wallSheet, wallTile, column, row);
         continue;
       }
 
