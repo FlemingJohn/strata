@@ -62,7 +62,18 @@ export function placeStations(
       );
 
       if (isClear && isAwayFromOtherStations) {
-        placed.push({ definition, horizontalPosition, verticalPosition, hasBeenUsed: false });
+        const appearance =
+          definition.appearances[
+            Math.floor(nextRandomNumber() * definition.appearances.length)
+          ];
+
+        placed.push({
+          definition,
+          appearance,
+          horizontalPosition,
+          verticalPosition,
+          hasBeenUsed: false
+        });
         break;
       }
     }
