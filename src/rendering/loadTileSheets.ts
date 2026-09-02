@@ -5,13 +5,18 @@ import {
   WALL_VARIATION_TILESET_PATH
 } from "../constants/tilesetSettings";
 import { WATER_TILESET_PATH } from "../constants/waterSettings";
-import { FIRE_SHEET_PATH, SMOKE_SHEET_PATH } from "../constants/fireSettings";
+import {
+  FIRE_SHEET_PATH,
+  SECOND_FIRE_SHEET_PATH,
+  SMOKE_SHEET_PATH
+} from "../constants/fireSettings";
 
 export interface TileSheets {
   floorSheet: HTMLImageElement;
   wallSheet: HTMLImageElement;
   dungeonSheet: HTMLImageElement;
   fireSheet: HTMLImageElement;
+  secondFireSheet: HTMLImageElement;
   smokeSheet: HTMLImageElement;
   waterSheet: HTMLImageElement;
   wallVariationSheet: HTMLImageElement;
@@ -32,6 +37,7 @@ export async function loadTileSheets(): Promise<TileSheets> {
     wallSheet,
     dungeonSheet,
     fireSheet,
+    secondFireSheet,
     smokeSheet,
     waterSheet,
     wallVariationSheet
@@ -40,6 +46,7 @@ export async function loadTileSheets(): Promise<TileSheets> {
     loadImage(WALL_TILESET_PATH),
     loadImage(DUNGEON_TILESET_PATH),
     loadImage(FIRE_SHEET_PATH),
+    loadImage(SECOND_FIRE_SHEET_PATH),
     loadImage(SMOKE_SHEET_PATH),
     loadImage(WATER_TILESET_PATH),
     loadImage(WALL_VARIATION_TILESET_PATH)
@@ -50,6 +57,7 @@ export async function loadTileSheets(): Promise<TileSheets> {
     wallSheet,
     dungeonSheet,
     fireSheet,
+    secondFireSheet,
     smokeSheet,
     waterSheet,
     wallVariationSheet
