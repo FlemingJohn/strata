@@ -1,6 +1,7 @@
 import {
   DUNGEON_TILESET_PATH,
   FLOOR_TILESET_PATH,
+  INTERIOR_WALL_TILESET_PATH,
   WALL_TILESET_PATH,
   WALL_VARIATION_TILESET_PATH
 } from "../constants/tilesetSettings";
@@ -20,6 +21,7 @@ export interface TileSheets {
   smokeSheet: HTMLImageElement;
   waterSheet: HTMLImageElement;
   wallVariationSheet: HTMLImageElement;
+  interiorWallSheet: HTMLImageElement;
 }
 
 function loadImage(path: string): Promise<HTMLImageElement> {
@@ -40,7 +42,8 @@ export async function loadTileSheets(): Promise<TileSheets> {
     secondFireSheet,
     smokeSheet,
     waterSheet,
-    wallVariationSheet
+    wallVariationSheet,
+    interiorWallSheet
   ] = await Promise.all([
     loadImage(FLOOR_TILESET_PATH),
     loadImage(WALL_TILESET_PATH),
@@ -49,7 +52,8 @@ export async function loadTileSheets(): Promise<TileSheets> {
     loadImage(SECOND_FIRE_SHEET_PATH),
     loadImage(SMOKE_SHEET_PATH),
     loadImage(WATER_TILESET_PATH),
-    loadImage(WALL_VARIATION_TILESET_PATH)
+    loadImage(WALL_VARIATION_TILESET_PATH),
+    loadImage(INTERIOR_WALL_TILESET_PATH)
   ]);
 
   return {
@@ -60,6 +64,7 @@ export async function loadTileSheets(): Promise<TileSheets> {
     secondFireSheet,
     smokeSheet,
     waterSheet,
-    wallVariationSheet
+    wallVariationSheet,
+    interiorWallSheet
   };
 }
