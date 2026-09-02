@@ -46,6 +46,7 @@ export function createPlayer(
     rollDirectionVertical: 1,
 
     currentAttackIdentifier: 0,
-    secondsUntilCastReady: 0
+    secondsUntilCastReady: 0,
+    secondsOfSharpenedWeapon: 0
   };
 }
