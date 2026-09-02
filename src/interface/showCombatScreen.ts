@@ -10,6 +10,7 @@ import { loadEnemySprites } from "../rendering/loadEnemySprites";
 import { loadLpcCharacter } from "../rendering/loadLpcCharacter";
 import { chooseAppearanceFromAddress, describeAppearance } from "../game/chooseAppearanceFromAddress";
 import { DEMO_WALLET_ADDRESS } from "../constants/characterAppearance";
+import { loadPropSheets } from "../rendering/loadPropSheets";
 import { loadTileSheets } from "../rendering/loadTileSheets";
 import { runCombatLoop } from "../game/runCombatLoop";
 import { showDeathScreen } from "./showDeathScreen";
@@ -68,9 +69,23 @@ export function showCombatScreen(
     });
   }
 
-  Promise.all([loadTileSheets(), loadLpcCharacter(appearance), loadEnemySprites()])
-    .then(([sheets, heroSprites, enemySprites]) => {
-      runCombatLoop(canvas, player, floor, startRoom, sheets, heroSprites, enemySprites, {
+  Promise.all([
+    loadTileSheets(),
+    loadLpcCharacter(appearance),
+    loadEnemySprites(),
+    loadPropSheets()
+  ])
+    .then(([sheets, heroSprites, enemySprites, propSheets]) => {
+      runCombatLoop(
+        canvas,
+        player,
+        floor,
+        startRoom,
+        sheets,
+        heroSprites,
+        enemySprites,
+        propSheets,
+        {
         onRoomEntered: (room, clearedCount) => {
           status.textContent =
             `${room.purpose} · ${clearedCount} of ${floor.rooms.length} cleared · ` +
