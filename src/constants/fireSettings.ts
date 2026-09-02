@@ -1,6 +1,7 @@
 const BONFIRE_FOLDER = "/assets/pixelCrawler/Environment/Structures/Stations/Bonfire";
 
 export const FIRE_SHEET_PATH = `${BONFIRE_FOLDER}/Fire_01-Sheet.png`;
+export const SECOND_FIRE_SHEET_PATH = `${BONFIRE_FOLDER}/Fire_02-Sheet.png`;
 export const SMOKE_SHEET_PATH = `${BONFIRE_FOLDER}/Smoke-Sheet.png`;
 
 export const FIRE_FRAME_WIDTH = 32;
