@@ -743,7 +743,14 @@ export function runCombatLoop(
     drawTorchFlames(context, sheets.fireSheet, FIRE_FRAME_WIDTH, torches, fireFrameIndex);
 
     if (fires.length > 0) {
-      drawFireSprites(context, sheets.fireSheet, sheets.smokeSheet, fires, fireFrameIndex);
+      drawFireSprites(
+        context,
+        sheets.fireSheet,
+        sheets.secondFireSheet,
+        sheets.smokeSheet,
+        fires,
+        fireFrameIndex
+      );
     }
 
     drawShockwaves(context, shockwaves);
