@@ -1,8 +1,10 @@
 import {
   DUNGEON_TILESET_PATH,
   FLOOR_TILESET_PATH,
-  WALL_TILESET_PATH
+  WALL_TILESET_PATH,
+  WALL_VARIATION_TILESET_PATH
 } from "../constants/tilesetSettings";
+import { WATER_TILESET_PATH } from "../constants/waterSettings";
 import { FIRE_SHEET_PATH, SMOKE_SHEET_PATH } from "../constants/fireSettings";
 
 export interface TileSheets {
@@ -11,6 +13,8 @@ export interface TileSheets {
   dungeonSheet: HTMLImageElement;
   fireSheet: HTMLImageElement;
   smokeSheet: HTMLImageElement;
+  waterSheet: HTMLImageElement;
+  wallVariationSheet: HTMLImageElement;
 }
 
 function loadImage(path: string): Promise<HTMLImageElement> {
@@ -23,13 +27,31 @@ function loadImage(path: string): Promise<HTMLImageElement> {
 }
 
 export async function loadTileSheets(): Promise<TileSheets> {
-  const [floorSheet, wallSheet, dungeonSheet, fireSheet, smokeSheet] = await Promise.all([
+  const [
+    floorSheet,
+    wallSheet,
+    dungeonSheet,
+    fireSheet,
+    smokeSheet,
+    waterSheet,
+    wallVariationSheet
+  ] = await Promise.all([
     loadImage(FLOOR_TILESET_PATH),
     loadImage(WALL_TILESET_PATH),
     loadImage(DUNGEON_TILESET_PATH),
     loadImage(FIRE_SHEET_PATH),
-    loadImage(SMOKE_SHEET_PATH)
+    loadImage(SMOKE_SHEET_PATH),
+    loadImage(WATER_TILESET_PATH),
+    loadImage(WALL_VARIATION_TILESET_PATH)
   ]);
 
-  return { floorSheet, wallSheet, dungeonSheet, fireSheet, smokeSheet };
+  return {
+    floorSheet,
+    wallSheet,
+    dungeonSheet,
+    fireSheet,
+    smokeSheet,
+    waterSheet,
+    wallVariationSheet
+  };
 }
