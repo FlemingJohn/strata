@@ -1,4 +1,4 @@
-import type { StationKind, StationSheets } from "../types/station";
+import type { StationAppearance, StationKind, StationSheets } from "../types/station";
 import { STATION_DEFINITIONS } from "../constants/stationSettings";
 
 function loadImage(path: string): Promise<HTMLImageElement | null> {
@@ -6,20 +6,35 @@ function loadImage(path: string): Promise<HTMLImageElement | null> {
     const image = new Image();
     image.addEventListener("load", () => resolve(image));
     image.addEventListener("error", () => resolve(null));
-    image.src = path;
+    image.src = encodeURI(path);
   });
 }
 
-export async function loadStationSheets(): Promise<StationSheets> {
+function listAppearances(): StationAppearance[] {
   const kinds = Object.keys(STATION_DEFINITIONS) as StationKind[];
+  const appearances: StationAppearance[] = [];
+
+  for (const kind of kinds) {
+    appearances.push(...STATION_DEFINITIONS[kind].appearances);
+  }
+
+  return appearances;
+}
+
+export async function loadStationSheets(): Promise<StationSheets> {
+  const appearances = listAppearances();
   const images = await Promise.all(
-    kinds.map((kind) => loadImage(STATION_DEFINITIONS[kind].sheetPath))
+    appearances.map((appearance) => loadImage(appearance.sheetPath))
   );
 
-  const sheets = {} as StationSheets;
+  const sheets: StationSheets = {};
 
-  kinds.forEach((kind, index) => {
-    sheets[kind] = images[index];
+  appearances.forEach((appearance, index) => {
+    const image = images[index];
+
+    if (image) {
+      sheets[appearance.sheetName] = image;
+    }
   });
 
   return sheets;
