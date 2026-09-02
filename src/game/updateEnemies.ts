@@ -13,6 +13,7 @@ import {
   SECONDS_BETWEEN_PROJECTILES
 } from "../constants/enemySettings";
 import { KNOCKBACK_FRICTION_PER_FRAME } from "../constants/playerSettings";
+import { findSpeedMultiplierAt } from "./findTileKindAt";
 import { collidesWithWall } from "./movePlayerThroughRoom";
 
 function moveEnemy(
@@ -79,6 +80,9 @@ export function updateEnemies(
     const distance = Math.hypot(towardsHorizontal, towardsVertical) || 1;
     const directionHorizontal = towardsHorizontal / distance;
     const directionVertical = towardsVertical / distance;
+    const enemySpeed =
+      enemy.definition.movementSpeed *
+      findSpeedMultiplierAt(tileMap, enemy.horizontalPosition, enemy.verticalPosition);
 
     if (enemy.definition.canHealOtherEnemies) {
       healNearbyAllies(enemy, enemies, secondsElapsed);
@@ -95,8 +99,8 @@ export function updateEnemies(
       moveEnemy(
         enemy,
         tileMap,
-        directionHorizontal * enemy.definition.movementSpeed * preferredDirection * secondsElapsed,
-        directionVertical * enemy.definition.movementSpeed * preferredDirection * secondsElapsed
+        directionHorizontal * enemySpeed * preferredDirection * secondsElapsed,
+        directionVertical * enemySpeed * preferredDirection * secondsElapsed
       );
 
       if (enemy.secondsUntilBehaviourChanges <= 0) {
@@ -139,8 +143,8 @@ export function updateEnemies(
       moveEnemy(
         enemy,
         tileMap,
-        directionHorizontal * enemy.definition.movementSpeed * secondsElapsed,
-        directionVertical * enemy.definition.movementSpeed * secondsElapsed
+        directionHorizontal * enemySpeed * secondsElapsed,
+        directionVertical * enemySpeed * secondsElapsed
       );
     }
 
