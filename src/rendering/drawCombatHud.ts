@@ -11,6 +11,7 @@ const STAMINA_COLOUR = "#5B9C77";
 const STAMINA_EMPTY_COLOUR = "#16221B";
 const LABEL_COLOUR = "#9C8C7A";
 const HIGHLIGHT_COLOUR = "#E0A233";
+const SHARPENED_COLOUR = "#F5D18A";
 
 export function drawCombatHud(
   context: CanvasRenderingContext2D,
@@ -80,4 +81,13 @@ export function drawCombatHud(
     BAR_WIDTH + 160,
     10
   );
+
+  if (player.secondsOfSharpenedWeapon > 0) {
+    context.fillStyle = SHARPENED_COLOUR;
+    context.fillText(
+      `SHARP ${Math.ceil(player.secondsOfSharpenedWeapon)}s`,
+      BAR_WIDTH + 160,
+      19
+    );
+  }
 }
