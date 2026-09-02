@@ -1,4 +1,5 @@
 import type { CombatParticle, ImpactFeedback } from "../types/combat";
+import type { DyingEnemy } from "../types/dyingEnemy";
 import type { EnemyCharacter } from "../types/enemy";
 import type { PlayerCharacter } from "../types/player";
 import {
@@ -15,6 +16,7 @@ import {
 import { DAMAGE_MULTIPLIER_WHILE_RECOVERING } from "../constants/enemySettings";
 import { KNOCKBACK_SPEED_PIXELS_PER_SECOND } from "../constants/animationSettings";
 import { burstParticles, recordHit, recordKill } from "./createImpactFeedback";
+import { createDyingEnemy } from "./createDyingEnemy";
 
 const ATTACK_SHAPES = {
   slice: { damage: SLICE_DAMAGE, reach: SLICE_REACH_PIXELS, radius: 13, duration: SLICE_DURATION_SECONDS },
@@ -58,7 +60,8 @@ export function resolveAttackHits(
   enemies: EnemyCharacter[],
   particles: CombatParticle[],
   feedback: ImpactFeedback,
-  respectsReducedMotion: boolean
+  respectsReducedMotion: boolean,
+  dyingEnemies: DyingEnemy[]
 ): number {
   const area = findActiveAttackArea(player);
 
@@ -115,6 +118,13 @@ export function resolveAttackHits(
     if (enemy.currentHealth <= 0) {
       burstParticles(particles, enemy.horizontalPosition, enemy.verticalPosition, 20, "#C4523A", 160);
       recordKill(feedback, respectsReducedMotion);
+      dyingEnemies.push(
+        createDyingEnemy(
+          enemy.definition.name,
+          enemy.horizontalPosition,
+          enemy.verticalPosition
+        )
+      );
       enemies.splice(index, 1);
       killCount += 1;
 
