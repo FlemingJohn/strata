@@ -7,6 +7,7 @@ import {
   ROOM_TILE_ROWS
 } from "../constants/dungeonSettings";
 import { createSeededRandomFromHash } from "./createSeededRandomFromHash";
+import { pourWaterPools } from "./pourWaterPools";
 
 const DOOR_HALF_WIDTH = 1;
 
@@ -91,6 +92,10 @@ export function generateRoomTiles(room: DungeonRoom, layoutSeed: string): RoomTi
 
   if (room.purpose === "combat") {
     addObstacles(tiles, nextRandomNumber);
+  }
+
+  if (room.purpose !== "boss") {
+    pourWaterPools(tiles, nextRandomNumber);
   }
 
   carveDoors(tiles, room);
