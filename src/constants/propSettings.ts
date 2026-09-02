@@ -17,7 +17,8 @@ export const PROP_SHEET_PATHS: Record<string, string> = {
   furniture: `${PROP_FOLDER}/Furniture.png`,
   tools: `${PROP_FOLDER}/Tools.png`,
   meat: `${PROP_FOLDER}/Meat.png`,
-  pan: `${PROP_FOLDER}/Pan.png`
+  pan: `${PROP_FOLDER}/Pan.png`,
+  interior: "/assets/pixelCrawler/Environment/Structures/Buildings/Interior/Interior_Props_01.png"
 };
 
 export const PROP_REGIONS: Record<string, PropRegion[]> = {
@@ -116,14 +117,24 @@ export const PROP_REGIONS: Record<string, PropRegion[]> = {
     { left: 144, top: 42, width: 16, height: 22 },
     { left: 7, top: 91, width: 18, height: 21 },
     { left: 87, top: 91, width: 18, height: 21 }
+  ],
+  interior: [
+    { left: 147, top: 76, width: 26, height: 20 },
+    { left: 166, top: 261, width: 20, height: 20 },
+    { left: 594, top: 242, width: 12, height: 27 },
+    { left: 32, top: 360, width: 15, height: 24 },
+    { left: 584, top: 7, width: 16, height: 17 },
+    { left: 102, top: 274, width: 20, height: 12 },
+    { left: 97, top: 61, width: 14, height: 19 },
+    { left: 67, top: 34, width: 11, height: 24 }
   ]
 };
 
 export const PROP_SHEETS_BY_STRATUM: Record<number, string[]> = {
   1: ["vegetation", "rocks", "farm"],
   2: ["resources", "rocks", "tools"],
-  3: ["rocks", "dungeon", "furniture"],
-  4: ["esoteric", "dungeon", "furniture"]
+  3: ["rocks", "dungeon", "furniture", "interior"],
+  4: ["esoteric", "dungeon", "furniture", "interior"]
 };
 
 export const FURNACE_PROP_SHEETS = ["dungeon", "esoteric", "meat", "pan"];
