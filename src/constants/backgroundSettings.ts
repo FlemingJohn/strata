@@ -21,11 +21,8 @@ export const YEAR_LABEL_FONT = "6px monospace";
 export const BACKGROUND_SEED = 20260906;
 
 export const SHAFT_TORCH_EVERY_ROWS = 6;
-export const SHAFT_TORCH_LIGHT_RADIUS_PIXELS = 78;
+export const SHAFT_TORCH_GLOW_RADIUS_PIXELS = 56;
+export const SHAFT_TORCH_GLOW_OPACITY = 0.26;
 export const SHAFT_TORCH_FLICKER_AMOUNT = 0.14;
 export const SHAFT_TORCH_FLICKER_SPEED = 7;
 
-export const MENU_BAND_WIDTH_RATIO = 0.56;
-export const MENU_BAND_OPACITY = 0.58;
-export const MENU_BAND_FEATHER_RATIO = 0.18;
-export const MENU_BAND_MINIMUM_INSET_PIXELS = 112;
