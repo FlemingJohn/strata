@@ -8,6 +8,7 @@ import {
 } from "../constants/stationSettings";
 import { TILE_SIZE } from "../constants/tilesetSettings";
 import { collidesWithWall } from "./movePlayerThroughRoom";
+import { findTileKindAt } from "./findTileKindAt";
 
 function findStationCount(purpose: RoomPurpose, nextRandomNumber: () => number): number {
   if (purpose === "start" || purpose === "relic") {
@@ -49,7 +50,9 @@ export function placeStations(
       const horizontalPosition = TILE_SIZE * 2 + nextRandomNumber() * (roomWidth - TILE_SIZE * 4);
       const verticalPosition = TILE_SIZE * 2 + nextRandomNumber() * (roomHeight - TILE_SIZE * 4);
 
-      const isClear = !collidesWithWall(tileMap, horizontalPosition, verticalPosition, 16);
+      const isClear =
+        !collidesWithWall(tileMap, horizontalPosition, verticalPosition, 16) &&
+        findTileKindAt(tileMap, horizontalPosition, verticalPosition) !== "water";
       const isAwayFromOtherStations = placed.every(
         (other) =>
           Math.hypot(
