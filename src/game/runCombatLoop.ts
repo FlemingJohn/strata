@@ -21,18 +21,9 @@ import { drawCombatHud } from "../rendering/drawCombatHud";
 import { drawEnemies, drawParticles, drawProjectiles } from "../rendering/drawEnemies";
 import type { Ember, FirePlacement } from "../types/fire";
 import type { Shockwave } from "../types/ability";
-import type { TorchPlacement } from "../types/lighting";
 import { LPC_FRAME_SIZE, LPC_FRAMES_PER_SECOND, LPC_GROUND_OFFSET_PIXELS } from "../constants/lpcCharacterSettings";
-import { PLAYER_LIGHT_RADIUS_PIXELS } from "../constants/lightingSettings";
 import { drawEntityShadow } from "../rendering/drawEntityShadow";
 import { drawFloorSigil } from "../rendering/drawFloorSigil";
-import {
-  buildTorchLights,
-  drawDarknessWithLights,
-  drawTorchCores
-} from "../rendering/drawTorchLight";
-import { placeTorches } from "./placeTorches";
-import { drawRoomEdgeShadow } from "../rendering/drawRoomEdgeShadow";
 import { drawRoomTiles } from "../rendering/drawRoomTiles";
 import { drawLpcCharacter } from "../rendering/drawLpcCharacter";
 import {
@@ -69,11 +60,13 @@ import {
   SLAM_MAXIMUM_RADIUS_PIXELS
 } from "../constants/abilitySettings";
 import { drawEmbers, drawFireSprites, updateEmbers } from "../rendering/drawFires";
+import { drawTorchFlames, drawTorchGlow } from "../rendering/drawTorchGlow";
+import { placeTorches } from "./placeTorches";
+import { FIRE_FRAME_WIDTH } from "../constants/fireSettings";
 import {
   FIRE_CONTACT_DAMAGE,
   FIRE_CONTACT_RADIUS_PIXELS,
-  FIRE_FRAMES_PER_SECOND,
-  FIRE_LIGHT_RADIUS_PIXELS
+  FIRE_FRAMES_PER_SECOND
 } from "../constants/fireSettings";
 import { updateEnemies, updateProjectiles } from "./updateEnemies";
 
@@ -116,7 +109,7 @@ export function runCombatLoop(
   let currentRoom: DungeonRoom = startRoom;
   let tileMap: RoomTileMap = generateRoomTiles(currentRoom, floor.description.layoutSeed);
   let enemies: EnemyCharacter[] = [];
-  let torches: TorchPlacement[] = placeTorches(tileMap);
+  let torches = placeTorches(tileMap);
   let fires: FirePlacement[] = [];
   const embers: Ember[] = [];
   const shockwaves: Shockwave[] = [];
@@ -513,6 +506,7 @@ export function runCombatLoop(
 
     context.clearRect(-16, -16, canvas.width + 32, canvas.height + 32);
     drawRoomTiles(context, tileMap, sheets, theme);
+    drawTorchGlow(context, torches, elapsedSeconds);
 
     if (currentRoom.purpose === "start" || currentRoom.purpose === "relic") {
       drawFloorSigil(
@@ -540,34 +534,14 @@ export function runCombatLoop(
     drawProjectiles(context, projectiles);
     drawParticles(context, particles);
 
+    drawTorchFlames(context, sheets.fireSheet, FIRE_FRAME_WIDTH, torches, fireFrameIndex);
+
     if (fires.length > 0) {
       drawFireSprites(context, sheets.fireSheet, sheets.smokeSheet, fires, fireFrameIndex);
     }
 
     drawShockwaves(context, shockwaves);
-
-    const lights = buildTorchLights(torches, elapsedSeconds);
-
-    for (const fire of fires) {
-      const flicker = 1 + Math.sin(elapsedSeconds * 7 + fire.flickerPhase) * 0.14;
-      lights.push({
-        horizontalPosition: fire.horizontalPosition,
-        verticalPosition: fire.verticalPosition - 8,
-        radiusInPixels: FIRE_LIGHT_RADIUS_PIXELS * flicker,
-        flickerPhase: fire.flickerPhase
-      });
-    }
-    lights.push({
-      horizontalPosition: player.horizontalPosition,
-      verticalPosition: player.verticalPosition,
-      radiusInPixels: PLAYER_LIGHT_RADIUS_PIXELS,
-      flickerPhase: 0
-    });
-
-    drawDarknessWithLights(context, canvas.width, canvas.height, lights);
-    drawTorchCores(context, torches, elapsedSeconds);
     drawEmbers(context, embers);
-    drawRoomEdgeShadow(context, canvas.width, canvas.height);
     context.restore();
 
     drawCombatHud(
