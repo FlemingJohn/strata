@@ -2,6 +2,8 @@ import type { EnemyName } from "../types/enemy";
 
 const MOB_FOLDER = "/assets/pixelCrawler/Entities/Mobs";
 
+const NPC_FOLDER = "/assets/pixelCrawler/Entities/Npc's";
+
 const FOLDER_BY_ENEMY: Record<EnemyName, string> = {
   skeleton: "Skeleton Crew/Skeleton - Base",
   skeletonRogue: "Skeleton Crew/Skeleton - Rogue",
@@ -10,11 +12,17 @@ const FOLDER_BY_ENEMY: Record<EnemyName, string> = {
   orc: "Orc Crew/Orc",
   orcRogue: "Orc Crew/Orc - Rogue",
   orcShaman: "Orc Crew/Orc - Shaman",
-  orcWarrior: "Orc Crew/Orc - Warrior"
+  orcWarrior: "Orc Crew/Orc - Warrior",
+  eliteKnight: "Knight",
+  eliteRogue: "Rogue",
+  eliteWizard: "Wizzard"
 };
 
+const ELITE_NAMES: EnemyName[] = ["eliteKnight", "eliteRogue", "eliteWizard"];
+
 export function findEnemySheetPath(enemyName: EnemyName, action: string): string {
-  return encodeURI(`${MOB_FOLDER}/${FOLDER_BY_ENEMY[enemyName]}/${action}/${action}-Sheet.png`);
+  const baseFolder = ELITE_NAMES.includes(enemyName) ? NPC_FOLDER : MOB_FOLDER;
+  return encodeURI(`${baseFolder}/${FOLDER_BY_ENEMY[enemyName]}/${action}/${action}-Sheet.png`);
 }
 
 export const ENEMY_NAMES: EnemyName[] = [
@@ -25,7 +33,10 @@ export const ENEMY_NAMES: EnemyName[] = [
   "orc",
   "orcRogue",
   "orcShaman",
-  "orcWarrior"
+  "orcWarrior",
+  "eliteKnight",
+  "eliteRogue",
+  "eliteWizard"
 ];
 
 export const ENEMY_GROUND_OFFSET_PIXELS = 31;
