@@ -45,6 +45,9 @@ import { chooseEliteNames, spawnEnemiesForRoom } from "./createEnemy";
 import { updateDyingEnemies } from "./createDyingEnemy";
 import { applyDamageToPlayer, updatePlayer } from "./updatePlayer";
 import { findSoundEngine } from "../audio/sharedSoundEngine";
+import { findMusicEngine } from "../audio/sharedMusicEngine";
+import { chooseMusicShapeFromRoot } from "./chooseMusicShapeFromRoot";
+import { MUSIC_TRACKS } from "../constants/musicSettings";
 import { findAreaTheme } from "../constants/areaThemes";
 import { findStratumForBlock } from "./findStratumForBlock";
 import { placeFires } from "./placeFires";
@@ -145,6 +148,15 @@ export function runCombatLoop(
   }
 
   const sound = findSoundEngine();
+  const music = findMusicEngine();
+  const combatMusicShape = chooseMusicShapeFromRoot(
+    floor.description.layoutSeed,
+    MUSIC_TRACKS.combat.beatsPerMinute
+  );
+  const bossMusicShape = chooseMusicShapeFromRoot(
+    floor.description.layoutSeed,
+    MUSIC_TRACKS.boss.beatsPerMinute
+  );
   const stratum = findStratumForBlock(floor.description.sourceBlockNumber);
   const respectsReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const inputReader = createInputReader();
@@ -186,6 +198,15 @@ export function runCombatLoop(
   let previousTimestamp = 0;
   let animationHandle = 0;
   let isRunning = true;
+
+  function playTrackForCurrentRoom(): void {
+    if (currentRoom.purpose === "boss") {
+      music.playTrack("boss", bossMusicShape);
+      return;
+    }
+
+    music.playTrack("combat", combatMusicShape);
+  }
 
   function countClearedRooms(): number {
     return floor.rooms.filter((room) => room.hasBeenCleared).length;
@@ -381,6 +402,7 @@ export function runCombatLoop(
     }
 
     secondsUntilExitAllowed = SECONDS_BLOCKING_REENTRY;
+    playTrackForCurrentRoom();
     handlers.onRoomEntered(currentRoom, countClearedRooms());
   }
 
@@ -896,7 +918,7 @@ export function runCombatLoop(
   }
 
   sound.resumeAfterUserAction();
-  sound.startDrone();
+  playTrackForCurrentRoom();
   fires = theme.hasFires
     ? placeFires(
         tileMap,
@@ -920,7 +942,7 @@ export function runCombatLoop(
       isRunning = false;
       window.cancelAnimationFrame(animationHandle);
       inputReader.stopListening();
-      sound.stopDrone();
+      music.stopTrack();
     }
   };
 }
