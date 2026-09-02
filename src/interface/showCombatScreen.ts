@@ -45,7 +45,7 @@ export function showCombatScreen(
 
   const controls = document.createElement("p");
   controls.className = "combat-controls";
-  controls.textContent = "wasd move · j attack · k roll · l nova · m mute · esc exit";
+  controls.textContent = "wasd move · j attack · k roll · l nova · f use · m mute · esc exit";
 
   stage.append(canvas, status, controls);
   container.append(stage);
