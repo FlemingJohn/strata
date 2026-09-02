@@ -61,6 +61,9 @@ import type { Survivor, SurvivorSpriteLibrary } from "../types/survivor";
 import { findSurvivorWithinReach, placeSurvivors } from "./placeSurvivors";
 import { updateSurvivors } from "./updateSurvivors";
 import { drawSurvivorPrompt, drawSurvivors } from "../rendering/drawSurvivors";
+import type { AnimatedPropSheets, PlacedAnimatedProp } from "../types/animatedProp";
+import { placeAnimatedProps } from "./placeAnimatedProps";
+import { drawAnimatedProps } from "../rendering/drawAnimatedProps";
 import {
   SURVIVOR_LABELS,
   SURVIVOR_TALK_REACH_PIXELS
@@ -124,6 +127,7 @@ export function runCombatLoop(
   treeSheets: PropSheets,
   stationSheets: StationSheets,
   survivorSprites: SurvivorSpriteLibrary,
+  animatedPropSheets: AnimatedPropSheets,
   handlers: CombatLoopHandlers
 ): CombatLoopController {
   const context = canvas.getContext("2d");
@@ -149,6 +153,7 @@ export function runCombatLoop(
   let stations: PlacedStation[] = [];
   let trees: PlacedProp[] = [];
   let survivors: Survivor[] = [];
+  let animatedProps: PlacedAnimatedProp[] = [];
   let wasUsingStationLastFrame = false;
   const embers: Ember[] = [];
   let dyingEnemies: DyingEnemy[] = [];
@@ -193,6 +198,17 @@ export function runCombatLoop(
         `${floor.description.layoutSeed}:${currentRoom.position.column}:${currentRoom.position.row}:props`
       )
     );
+  }
+
+  function setAnimatedPropsForCurrentRoom(): void {
+    animatedProps = theme.hasFires
+      ? placeAnimatedProps(
+          tileMap,
+          createSeededRandomFromHash(
+            `${floor.description.layoutSeed}:${currentRoom.position.column}:${currentRoom.position.row}:animatedProps`
+          )
+        )
+      : [];
   }
 
   function gatherSurvivorsForCurrentRoom(): void {
@@ -326,6 +342,7 @@ export function runCombatLoop(
     particles.length = 0;
     dyingEnemies = [];
     scatterPropsForCurrentRoom();
+    setAnimatedPropsForCurrentRoom();
     gatherSurvivorsForCurrentRoom();
     plantTreesForCurrentRoom();
     raiseStationsForCurrentRoom();
@@ -662,6 +679,7 @@ export function runCombatLoop(
     drawRoomTiles(context, tileMap, sheets, theme);
     drawTorchGlow(context, torches, elapsedSeconds);
     drawProps(context, props, propSheets);
+    drawAnimatedProps(context, animatedProps, animatedPropSheets, elapsedSeconds);
     drawStations(context, stations, stationSheets, elapsedSeconds);
     drawSurvivors(context, survivors, survivorSprites, elapsedSeconds);
     drawTrees(context, trees, treeSheets);
@@ -852,6 +870,7 @@ export function runCombatLoop(
       )
     : [];
   scatterPropsForCurrentRoom();
+  setAnimatedPropsForCurrentRoom();
   gatherSurvivorsForCurrentRoom();
   plantTreesForCurrentRoom();
   raiseStationsForCurrentRoom();
