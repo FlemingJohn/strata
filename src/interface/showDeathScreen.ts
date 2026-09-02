@@ -2,6 +2,7 @@ import type { DungeonFloor } from "../types/dungeon";
 import type { EquippedRelic } from "../types/relic";
 import { createCursorMenu } from "./createCursorMenu";
 import { showTitleScreen } from "./showTitleScreen";
+import { writeRunRecord } from "../game/keepRunRecords";
 
 export type RunOutcome = "died" | "floorCleared";
 
@@ -39,6 +40,15 @@ export function showDeathScreen(
   panel.className = "screen-panel";
 
   const survived = summary.outcome === "floorCleared";
+
+  writeRunRecord({
+    depthReached: floor.description.floorNumber,
+    roomsCleared: summary.roomsCleared,
+    kills: summary.kills,
+    deepestBlockNumber: summary.deepestBlockNumber,
+    survived,
+    recordedAt: Date.now()
+  });
 
   const heading = document.createElement("h2");
   heading.className = survived ? "death-heading death-heading-survived" : "death-heading";
