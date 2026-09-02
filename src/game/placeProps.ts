@@ -7,6 +7,7 @@ import {
 } from "../constants/propSettings";
 import { TILE_SIZE } from "../constants/tilesetSettings";
 import { collidesWithWall } from "./movePlayerThroughRoom";
+import { findTileKindAt } from "./findTileKindAt";
 
 export function placeProps(
   tileMap: RoomTileMap,
@@ -42,7 +43,9 @@ export function placeProps(
       const horizontalPosition = TILE_SIZE * 2 + nextRandomNumber() * (roomWidth - TILE_SIZE * 4);
       const verticalPosition = TILE_SIZE * 2 + nextRandomNumber() * (roomHeight - TILE_SIZE * 4);
 
-      const isClear = !collidesWithWall(tileMap, horizontalPosition, verticalPosition, 10);
+      const isClear =
+        !collidesWithWall(tileMap, horizontalPosition, verticalPosition, 10) &&
+        findTileKindAt(tileMap, horizontalPosition, verticalPosition) !== "water";
       const isAwayFromCentre =
         Math.hypot(horizontalPosition - centreHorizontal, verticalPosition - centreVertical) > 44;
       const isAwayFromOtherProps = placed.every(
