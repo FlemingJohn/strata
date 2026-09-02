@@ -42,6 +42,87 @@ export const LANDMARK_DEFINITIONS: Record<string, LandmarkDefinition> = {
       { left: 0, top: 22, width: 31, height: 26 }
     ]
   },
+  brickForge: {
+    name: "brickForge",
+    sheetPath: `${STATION_FOLDER}/Furnace/Bricks_02-Sheet.png`,
+    regions: [
+      { left: 6, top: 7, width: 36, height: 57 },
+      { left: 54, top: 7, width: 36, height: 57 },
+      { left: 6, top: 71, width: 36, height: 57 }
+    ]
+  },
+  brickKiln: {
+    name: "brickKiln",
+    sheetPath: `${STATION_FOLDER}/Furnace/Bricks_01-Sheet.png`,
+    regions: [
+      { left: 1, top: 7, width: 30, height: 41 },
+      { left: 33, top: 7, width: 30, height: 41 },
+      { left: 1, top: 55, width: 30, height: 41 }
+    ]
+  },
+  ironForge: {
+    name: "ironForge",
+    sheetPath: `${STATION_FOLDER}/Furnace/Iron_02-Sheet.png`,
+    regions: [
+      { left: 5, top: 5, width: 38, height: 59 },
+      { left: 53, top: 5, width: 38, height: 59 },
+      { left: 5, top: 69, width: 38, height: 59 }
+    ]
+  },
+  stoneForge: {
+    name: "stoneForge",
+    sheetPath: `${STATION_FOLDER}/Furnace/Stone_02-Sheet.png`,
+    regions: [
+      { left: 4, top: 15, width: 37, height: 49 },
+      { left: 52, top: 15, width: 37, height: 49 },
+      { left: 4, top: 79, width: 37, height: 49 }
+    ]
+  },
+  stoneChimney: {
+    name: "stoneChimney",
+    sheetPath: `${STATION_FOLDER}/Furnace/Stone_03-Sheet.png`,
+    regions: [
+      { left: 3, top: 2, width: 41, height: 62 },
+      { left: 51, top: 2, width: 41, height: 62 },
+      { left: 3, top: 66, width: 41, height: 62 }
+    ]
+  },
+  smallAnvil: {
+    name: "smallAnvil",
+    sheetPath: `${STATION_FOLDER}/Anvil/Anvil_01-Sheet.png`,
+    regions: [
+      { left: 454, top: 23, width: 53, height: 48 },
+      { left: 6, top: 183, width: 53, height: 48 },
+      { left: 6, top: 263, width: 53, height: 48 }
+    ]
+  },
+  greatAnvil: {
+    name: "greatAnvil",
+    sheetPath: `${STATION_FOLDER}/Anvil/Anvil_02-Sheet.png`,
+    regions: [
+      { left: 160, top: 258, width: 79, height: 58 },
+      { left: 0, top: 178, width: 79, height: 58 },
+      { left: 240, top: 18, width: 79, height: 58 }
+    ]
+  },
+  millHouse: {
+    name: "millHouse",
+    sheetPath: `${STATION_FOLDER}/Sawmill/Level_2-Sheet.png`,
+    regions: [
+      { left: 560, top: 67, width: 72, height: 54 },
+      { left: 0, top: 131, width: 72, height: 54 },
+      { left: 80, top: 131, width: 72, height: 54 }
+    ]
+  },
+  greatMill: {
+    name: "greatMill",
+    sheetPath: `${STATION_FOLDER}/Sawmill/Level_3-Sheet.png`,
+    regions: [
+      { left: 672, top: 1, width: 112, height: 75 },
+      { left: 784, top: 1, width: 112, height: 75 },
+      { left: 0, top: 81, width: 112, height: 75 }
+    ]
+  },
   broadCanopy: {
     name: "broadCanopy",
     sheetPath: `${TREE_FOLDER}/Model_01/Size_04.png`,
@@ -75,13 +156,19 @@ export const LANDMARK_DEFINITIONS: Record<string, LandmarkDefinition> = {
 };
 
 export const LANDMARK_NAMES_BY_STRATUM: Record<number, string[]> = {
-  1: ["broadCanopy", "slenderCanopy", "towerCanopy"],
-  2: ["sawmill", "workbench"],
-  3: ["anvil", "workbench"],
-  4: ["anvil", "furnace"]
+  1: ["broadCanopy", "slenderCanopy", "towerCanopy", "millHouse"],
+  2: ["sawmill", "workbench", "greatMill", "brickKiln"],
+  3: ["anvil", "workbench", "smallAnvil", "brickForge"],
+  4: ["anvil", "furnace", "greatAnvil", "stoneForge"]
 };
 
-export const FURNACE_LANDMARK_NAMES = ["furnace", "anvil"];
+export const FURNACE_LANDMARK_NAMES = [
+  "furnace",
+  "anvil",
+  "ironForge",
+  "stoneChimney",
+  "greatAnvil"
+];
 export const CHANCE_A_ROOM_HOLDS_A_LANDMARK = 0.55;
 export const LANDMARK_TOP_BAND_FRACTION = 0.42;
 export const LANDMARK_OPACITY = 0.96;
