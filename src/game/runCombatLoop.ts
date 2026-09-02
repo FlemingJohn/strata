@@ -140,7 +140,7 @@ export function runCombatLoop(
   const shockwaves: Shockwave[] = [];
   let wasCastingLastFrame = false;
   let secondsUntilBossSlam = SLAM_COOLDOWN_SECONDS;
-  let theme = findAreaTheme(stratum.stratumNumber, currentRoom.purpose === "boss");
+  let theme = findAreaTheme(stratum.stratumNumber, currentRoom.purpose);
   let elapsedSeconds = 0;
   let fireFrameIndex = 0;
   let secondsSinceFireFrame = 0;
@@ -258,7 +258,7 @@ export function runCombatLoop(
     currentRoom = room;
     tileMap = generateRoomTiles(currentRoom, floor.description.layoutSeed);
     torches = placeTorches(tileMap);
-    theme = findAreaTheme(stratum.stratumNumber, currentRoom.purpose === "boss");
+    theme = findAreaTheme(stratum.stratumNumber, currentRoom.purpose);
     embers.length = 0;
     fires = theme.hasFires
       ? placeFires(
