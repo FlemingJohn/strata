@@ -17,7 +17,6 @@ import {
   decayImpactFeedback,
   updateParticles
 } from "./createImpactFeedback";
-import { drawCombatHud } from "../rendering/drawCombatHud";
 import {
   drawDyingEnemies,
   drawEnemies,
@@ -55,7 +54,7 @@ import { placeProps } from "./placeProps";
 import { drawProps } from "../rendering/drawProps";
 import type { PlacedStation, StationSheets } from "../types/station";
 import { findStationWithinReach, placeStations } from "./placeStations";
-import { drawStationPrompt, drawStations } from "../rendering/drawStations";
+import { drawStations } from "../rendering/drawStations";
 import { countdownSharpenedWeapon, useStation } from "./useStation";
 import { plantTrees } from "./plantTrees";
 import { drawTrees } from "../rendering/drawTrees";
@@ -63,8 +62,11 @@ import { TREE_STRATUM_NUMBER } from "../constants/treeSettings";
 import type { Survivor, SurvivorSpriteLibrary } from "../types/survivor";
 import { findSurvivorWithinReach, placeSurvivors } from "./placeSurvivors";
 import { updateSurvivors } from "./updateSurvivors";
-import { drawSurvivorPrompt, drawSurvivors } from "../rendering/drawSurvivors";
+import { drawSurvivors } from "../rendering/drawSurvivors";
 import type { AnimatedPropSheets, PlacedAnimatedProp } from "../types/animatedProp";
+import type { CombatOverlay } from "../types/combatOverlay";
+import { STATION_PROMPT_RISE_PIXELS } from "../constants/stationSettings";
+import { SURVIVOR_PROMPT_RISE_PIXELS } from "../constants/survivorSettings";
 import { placeAnimatedProps } from "./placeAnimatedProps";
 import { drawAnimatedProps } from "../rendering/drawAnimatedProps";
 import type { LandmarkSheets, PlacedLandmark } from "../types/landmark";
@@ -139,6 +141,7 @@ export function runCombatLoop(
   survivorSprites: SurvivorSpriteLibrary,
   animatedPropSheets: AnimatedPropSheets,
   landmarkSheets: LandmarkSheets,
+  overlay: CombatOverlay,
   handlers: CombatLoopHandlers
 ): CombatLoopController {
   const context = canvas.getContext("2d");
@@ -778,39 +781,61 @@ export function runCombatLoop(
     drawShockwaves(context, shockwaves);
     drawEmbers(context, embers);
 
-    const stationInReach = findStationWithinReach(
+    context.restore();
+
+    showPromptForWhateverIsInReach();
+
+    overlay.updateHud({
+      currentHealth: player.currentHealth,
+      maximumHealth: player.maximumHealth,
+      currentStamina: player.currentStamina,
+      maximumStamina: player.maximumStamina,
+      floorNumber: floor.description.floorNumber,
+      sourceBlockNumber: floor.description.sourceBlockNumber,
+      enemiesRemaining: enemies.length,
+      roomProgress: `${countClearedRooms()}/${floor.rooms.length}`,
+      roomPurpose: currentRoom.purpose,
+      weaponStyle: player.weaponStyle,
+      secondsUntilCastReady: player.secondsUntilCastReady,
+      secondsOfSharpenedWeapon: player.secondsOfSharpenedWeapon
+    });
+  }
+
+  function showPromptForWhateverIsInReach(): void {
+    const station = findStationWithinReach(
       stations,
       player.horizontalPosition,
       player.verticalPosition
     );
 
-    if (stationInReach) {
-      drawStationPrompt(context, stationInReach);
+    if (station) {
+      overlay.showPrompt({
+        text: station.definition.label,
+        horizontalPosition: station.horizontalPosition,
+        verticalPosition: station.verticalPosition - STATION_PROMPT_RISE_PIXELS,
+        isSpent: station.hasBeenUsed
+      });
+      return;
     }
 
-    const survivorInReach = findSurvivorWithinReach(
+    const survivor = findSurvivorWithinReach(
       survivors,
       player.horizontalPosition,
       player.verticalPosition,
       SURVIVOR_TALK_REACH_PIXELS
     );
 
-    if (!stationInReach && survivorInReach) {
-      drawSurvivorPrompt(context, survivorInReach);
+    if (survivor) {
+      overlay.showPrompt({
+        text: SURVIVOR_LABELS[survivor.name],
+        horizontalPosition: survivor.horizontalPosition,
+        verticalPosition: survivor.verticalPosition - SURVIVOR_PROMPT_RISE_PIXELS,
+        isSpent: survivor.hasSpoken
+      });
+      return;
     }
 
-    context.restore();
-
-    drawCombatHud(
-      context,
-      canvas.width,
-      player,
-      floor.description.floorNumber,
-      floor.description.sourceBlockNumber,
-      enemies.length,
-      `${countClearedRooms()}/${floor.rooms.length}`,
-      currentRoom.purpose
-    );
+    overlay.hidePrompt();
   }
 
   function renderFrame(timestamp: number): void {
