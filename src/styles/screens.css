@@ -668,8 +668,6 @@
 
 .room-preview-canvas {
   image-rendering: pixelated;
-  max-width: 100%;
-  height: auto;
 }
 
 .how-top {
