@@ -8,7 +8,6 @@ import { resumeAudioContext } from "../audio/findAudioContext";
 import { showLadderScreen } from "./showLadderScreen";
 import { showHowToPlayScreen } from "./showHowToPlayScreen";
 import { startPracticeRun } from "../game/startPracticeRun";
-import { startRoomPreview } from "../rendering/startRoomPreview";
 import { TITLE_SCREEN_CONTROL_HINT } from "../constants/titleScreenSettings";
 
 function createBackgroundCanvas(): HTMLCanvasElement {
@@ -104,11 +103,6 @@ export function showTitleScreen(container: HTMLElement): void {
   music.playTrack("title", null);
   const stopWaitingForFirstAction = startTitleMusicOnFirstAction();
 
-  const preview = startRoomPreview();
-  const previewFrame = document.createElement("div");
-  previewFrame.className = "preview-frame";
-  previewFrame.append(preview.element);
-
   const panel = document.createElement("section");
   panel.className = "screen-panel title-screen-panel";
 
@@ -127,35 +121,30 @@ export function showTitleScreen(container: HTMLElement): void {
   function leaveForProving(): void {
     menu.stopListening();
     stopWaitingForFirstAction();
-    preview.stop();
     showProvingScreen(container);
   }
 
   function leaveForPractice(): void {
     menu.stopListening();
     stopWaitingForFirstAction();
-    preview.stop();
     startPracticeRun(container);
   }
 
   function leaveForHowToPlay(): void {
     menu.stopListening();
     stopWaitingForFirstAction();
-    preview.stop();
     showHowToPlayScreen(container);
   }
 
   function leaveForLadder(): void {
     menu.stopListening();
     stopWaitingForFirstAction();
-    preview.stop();
     showLadderScreen(container);
   }
 
   panel.append(
     createGameName(),
     tagline,
-    previewFrame,
     menu.element,
     createWorldStatusStrip(),
     createControlHint()
