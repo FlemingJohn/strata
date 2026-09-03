@@ -2,9 +2,15 @@ import type { CombatParticle } from "../types/combat";
 import type { EnemyCharacter, Projectile } from "../types/enemy";
 import type { EnemySpriteLibrary } from "./loadEnemySprites";
 import type { DyingEnemy } from "../types/dyingEnemy";
+import {
+  STRIKE_REACH_PIXELS,
+  STRIKE_WIND_UP_SECONDS
+} from "../constants/enemySettings";
 
 const PROJECTILE_COLOUR = "#7FB4D8";
 const TELEGRAPH_COLOUR = "#C4523A";
+const STRIKE_COLOUR = "#FFE7B0";
+const MARKER_COLOUR = "#E0A233";
 
 export function drawEnemies(
   context: CanvasRenderingContext2D,
@@ -21,14 +27,44 @@ export function drawEnemies(
     const top = Math.round(enemy.verticalPosition - (sheet.frameHeight - 1));
 
     if (enemy.behaviour === "windingUp") {
-      context.globalAlpha = 0.55;
-      context.fillStyle = TELEGRAPH_COLOUR;
-      context.fillRect(
-        Math.round(enemy.horizontalPosition - 10),
-        Math.round(enemy.verticalPosition + 2),
-        20,
-        2
+      const readiness = Math.max(
+        0,
+        Math.min(1, 1 - enemy.secondsUntilBehaviourChanges / STRIKE_WIND_UP_SECONDS)
       );
+      const facing = Math.atan2(enemy.strikeVertical, enemy.strikeHorizontal);
+
+      context.globalAlpha = 0.2 + readiness * 0.5;
+      context.fillStyle = TELEGRAPH_COLOUR;
+      context.beginPath();
+      context.moveTo(enemy.horizontalPosition, enemy.verticalPosition - 6);
+      context.arc(
+        enemy.horizontalPosition,
+        enemy.verticalPosition - 6,
+        STRIKE_REACH_PIXELS + 6,
+        facing - 0.6,
+        facing + 0.6
+      );
+      context.closePath();
+      context.fill();
+      context.globalAlpha = 1;
+    }
+
+    if (enemy.behaviour === "striking") {
+      const facing = Math.atan2(enemy.strikeVertical, enemy.strikeHorizontal);
+
+      context.globalAlpha = 0.8;
+      context.fillStyle = STRIKE_COLOUR;
+      context.beginPath();
+      context.moveTo(enemy.horizontalPosition, enemy.verticalPosition - 6);
+      context.arc(
+        enemy.horizontalPosition,
+        enemy.verticalPosition - 6,
+        STRIKE_REACH_PIXELS + 8,
+        facing - 0.7,
+        facing + 0.7
+      );
+      context.closePath();
+      context.fill();
       context.globalAlpha = 1;
     }
 
@@ -118,5 +154,26 @@ export function drawDyingEnemies(
       sheet.frameWidth,
       sheet.frameHeight
     );
+  }
+}
+
+export function drawEnemyMarkers(
+  context: CanvasRenderingContext2D,
+  enemies: EnemyCharacter[],
+  elapsedSeconds: number
+): void {
+  const bob = Math.round(Math.sin(elapsedSeconds * 5) * 2);
+
+  for (const enemy of enemies) {
+    const centre = Math.round(enemy.horizontalPosition);
+    const top = Math.round(enemy.verticalPosition - 40) + bob;
+
+    context.fillStyle = MARKER_COLOUR;
+    context.beginPath();
+    context.moveTo(centre - 5, top);
+    context.lineTo(centre + 5, top);
+    context.lineTo(centre, top + 6);
+    context.closePath();
+    context.fill();
   }
 }
