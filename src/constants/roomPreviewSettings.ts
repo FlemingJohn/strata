@@ -11,7 +11,7 @@ export interface PreviewEnemySpot extends PreviewSpot {
 
 export const PREVIEW_COLUMNS = 21;
 export const PREVIEW_ROWS = 10;
-export const PREVIEW_SCALE = 3;
+export const PREVIEW_SCALE = 2;
 export const PREVIEW_FRAMES_PER_SECOND = 6;
 
 export const PREVIEW_WATER = {
