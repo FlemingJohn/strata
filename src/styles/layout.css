@@ -7,6 +7,28 @@
   image-rendering: pixelated;
 }
 
+.shaft-label-layer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.shaft-label-row {
+  position: absolute;
+  left: 0;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 48px;
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 16px;
+  letter-spacing: 2px;
+  opacity: 0.34;
+  text-transform: uppercase;
+}
+
 .application-frame {
   position: relative;
   min-height: 100vh;
