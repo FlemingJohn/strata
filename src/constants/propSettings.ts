@@ -131,13 +131,13 @@ export const PROP_REGIONS: Record<string, PropRegion[]> = {
 };
 
 export const PROP_SHEETS_BY_STRATUM: Record<number, string[]> = {
-  1: ["vegetation", "rocks", "farm"],
-  2: ["resources", "rocks", "tools"],
-  3: ["rocks", "dungeon", "furniture", "interior"],
-  4: ["esoteric", "dungeon", "furniture", "interior"]
+  1: ["vegetation", "rocks"],
+  2: ["rocks", "resources"],
+  3: ["rocks", "dungeon", "resources"],
+  4: ["dungeon", "esoteric", "rocks"]
 };
 
-export const FURNACE_PROP_SHEETS = ["dungeon", "esoteric", "meat", "pan"];
+export const FURNACE_PROP_SHEETS = ["dungeon", "esoteric"];
 export const PROP_CLUSTERS_PER_ROOM_MINIMUM = 5;
 export const PROP_CLUSTERS_PER_ROOM_MAXIMUM = 9;
 export const PROPS_PER_CLUSTER_MINIMUM = 3;
