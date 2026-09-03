@@ -52,7 +52,7 @@ export function showCombatScreen(
 
   const status = document.createElement("p");
   status.className = "combat-status";
-  status.textContent = "getting the floor ready";
+  status.textContent = run.openingNotice ?? "getting the floor ready";
 
   const controls = document.createElement("p");
   controls.className = "combat-controls";
