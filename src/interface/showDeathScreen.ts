@@ -1,16 +1,16 @@
 import type { DungeonFloor } from "../types/dungeon";
-import type { EquippedRelic } from "../types/relic";
+import type { RunProgress } from "../types/runProgress";
 import { createCursorMenu } from "./createCursorMenu";
 import { showTitleScreen } from "./showTitleScreen";
 import { writeRunRecord } from "../game/keepRunRecords";
+import { countFloorsAvailable } from "../game/chooseBlockForDepth";
 
-export type RunOutcome = "died" | "floorCleared";
+export type RunOutcome = "died" | "runEnded";
 
 export interface RunSummary {
   outcome: RunOutcome;
   roomsCleared: number;
   kills: number;
-  deepestBlockNumber: number;
 }
 
 function createSummaryRow(name: string, value: string): HTMLElement {
@@ -31,36 +31,43 @@ function createSummaryRow(name: string, value: string): HTMLElement {
 export function showDeathScreen(
   container: HTMLElement,
   floor: DungeonFloor,
-  relics: EquippedRelic[],
+  run: RunProgress,
   summary: RunSummary
 ): void {
   container.replaceChildren();
 
+  const relics = run.equippedRelics;
   const panel = document.createElement("section");
   panel.className = "screen-panel";
 
-  const survived = summary.outcome === "floorCleared";
+  const survived = summary.outcome === "runEnded";
+  const roomsCleared = run.roomsClearedSoFar + summary.roomsCleared;
+  const kills = run.killsSoFar + summary.kills;
+  const floorsAvailable = countFloorsAvailable(run.provenRelics);
 
   writeRunRecord({
-    depthReached: floor.description.floorNumber,
-    roomsCleared: summary.roomsCleared,
-    kills: summary.kills,
-    deepestBlockNumber: summary.deepestBlockNumber,
+    depthReached: run.depth,
+    roomsCleared,
+    kills,
+    deepestBlockNumber: floor.description.sourceBlockNumber,
     survived,
     recordedAt: Date.now()
   });
 
   const heading = document.createElement("h2");
   heading.className = survived ? "death-heading death-heading-survived" : "death-heading";
-  heading.textContent = survived ? "FLOOR CLEARED" : "BURIED";
+  heading.textContent = survived ? "YOU REACHED THE BOTTOM" : "BURIED";
 
   const facts = document.createElement("div");
   facts.className = "floor-facts";
   facts.append(
-    createSummaryRow("depth reached", String(floor.description.floorNumber)),
-    createSummaryRow("rooms cleared", String(summary.roomsCleared)),
-    createSummaryRow("kills", String(summary.kills)),
-    createSummaryRow("deepest block", summary.deepestBlockNumber.toLocaleString("en-GB"))
+    createSummaryRow("floors reached", `${run.depth} of ${floorsAvailable}`),
+    createSummaryRow("rooms cleared", String(roomsCleared)),
+    createSummaryRow("kills", String(kills)),
+    createSummaryRow(
+      "deepest block",
+      floor.description.sourceBlockNumber.toLocaleString("en-GB")
+    )
   );
 
   const relicLine = document.createElement("p");
@@ -73,7 +80,7 @@ export function showDeathScreen(
 
   const menu = createCursorMenu([
     {
-      label: "Return to the surface",
+      label: "Back to the top",
       onChoose: () => {
         menu.stopListening();
         showTitleScreen(container);
