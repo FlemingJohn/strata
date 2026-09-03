@@ -25,6 +25,7 @@ import { waitForPixelFonts } from "../rendering/waitForPixelFonts";
 import { loadTileSheets } from "../rendering/loadTileSheets";
 import { runCombatLoop } from "../game/runCombatLoop";
 import { showDeathScreen } from "./showDeathScreen";
+import { showTitleScreen } from "./showTitleScreen";
 
 const LOGICAL_WIDTH = ROOM_TILE_COLUMNS * TILE_SIZE;
 const LOGICAL_HEIGHT = ROOM_TILE_ROWS * TILE_SIZE;
@@ -56,7 +57,7 @@ export function showCombatScreen(
   const controls = document.createElement("p");
   controls.className = "combat-controls";
   controls.textContent =
-    "wasd move · j attack · k roll · l blast · f use · m sound · esc leave";
+    "wasd move · click swing · right click blast · space dodge · e use · esc leave";
 
   frame.append(canvas);
   stage.append(frame, status, controls);
@@ -146,7 +147,13 @@ export function showCombatScreen(
         animatedPropSheets,
         landmarkSheets,
         overlay,
+        () => fitController.findScale(),
         {
+          onRunAbandoned: () => {
+            fitController.stop();
+            leaveFullScreen();
+            showTitleScreen(container);
+          },
           onRoomEntered: (room, clearedCount) => {
             status.textContent =
               `${room.purpose} · ${clearedCount} of ${floor.rooms.length} cleared · ` +
