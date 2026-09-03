@@ -13,6 +13,8 @@ import { drawEmbers, updateEmbers } from "./drawFires";
 import { drawTorchFlames, drawTorchGlow } from "./drawTorchGlow";
 import { loadTileSheets } from "./loadTileSheets";
 import { placeShaftTorches } from "./placeShaftTorches";
+import { findShaftLabels } from "./findShaftLabels";
+import { showShaftLabels } from "./showShaftLabels";
 
 export function startDungeonBackground(canvas: HTMLCanvasElement): BackgroundController {
   const context = canvas.getContext("2d");
@@ -23,6 +25,7 @@ export function startDungeonBackground(canvas: HTMLCanvasElement): BackgroundCon
 
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const dustMotes = createDustMotes();
+  const labelLayer = showShaftLabels();
   const embers: Ember[] = [];
 
   let tileSheets: TileSheets | null = null;
@@ -48,6 +51,7 @@ export function startDungeonBackground(canvas: HTMLCanvasElement): BackgroundCon
     drawTorchFlames(context, tileSheets.fireSheet, FIRE_FRAME_WIDTH, torches, fireFrameIndex);
     drawDustMotes(context, canvasWidth, canvasHeight, dustMotes);
     drawEmbers(context, embers);
+    labelLayer.update(findShaftLabels(canvasHeight, scrollOffsetPixels), canvasWidth);
   }
 
   function resizeCanvas(): void {
@@ -116,6 +120,7 @@ export function startDungeonBackground(canvas: HTMLCanvasElement): BackgroundCon
       isRunning = false;
       window.cancelAnimationFrame(animationHandle);
       window.removeEventListener("resize", resizeCanvas);
+      labelLayer.remove();
     }
   };
 }
