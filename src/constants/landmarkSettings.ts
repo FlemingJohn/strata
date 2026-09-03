@@ -242,10 +242,10 @@ export const LANDMARK_DEFINITIONS: Record<string, LandmarkDefinition> = {
 };
 
 export const LANDMARK_NAMES_BY_STRATUM: Record<number, string[]> = {
-  1: ["broadCanopy", "slenderCanopy", "towerCanopy", "millHouse", "millStump"],
-  2: ["sawmill", "workbench", "greatMill", "brickKiln", "brickStack", "millStump"],
-  3: ["anvil", "workbench", "smallAnvil", "brickForge", "alchemyBench", "stoneStack"],
-  4: ["anvil", "furnace", "greatAnvil", "stoneForge", "alchemyVault", "ironStack"]
+  1: ["broadCanopy", "slenderCanopy", "towerCanopy", "brickStack"],
+  2: ["brickKiln", "brickStack", "stoneStack", "smallAnvil"],
+  3: ["anvil", "smallAnvil", "brickForge", "stoneStack", "ironStack"],
+  4: ["anvil", "furnace", "greatAnvil", "stoneForge", "ironStack", "ironTower"]
 };
 
 export const FURNACE_LANDMARK_NAMES = [
@@ -255,8 +255,7 @@ export const FURNACE_LANDMARK_NAMES = [
   "stoneChimney",
   "greatAnvil",
   "greatForge",
-  "ironTower",
-  "alchemyShelf"
+  "ironTower"
 ];
 export const CHANCE_A_ROOM_HOLDS_A_LANDMARK = 0.55;
 export const LANDMARK_TOP_BAND_FRACTION = 0.42;
