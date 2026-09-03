@@ -23,6 +23,7 @@ import {
 } from "../constants/abilitySettings";
 import { movePlayerThroughRoom } from "./movePlayerThroughRoom";
 import { findSpeedMultiplierAt } from "./findTileKindAt";
+import { POINTER_DEAD_ZONE_PIXELS } from "../constants/controlSettings";
 
 const ATTACK_DURATIONS = {
   slice: SLICE_DURATION_SECONDS,
@@ -74,6 +75,28 @@ function rollIsFree(player: PlayerCharacter): boolean {
   return hasFreeRollRelic && player.currentHealth > player.maximumHealth / 2;
 }
 
+function findFacingFromPointer(
+  player: PlayerCharacter,
+  input: PlayerInput
+): PlayerCharacter["facing"] | null {
+  if (input.pointerHorizontal === null || input.pointerVertical === null) {
+    return null;
+  }
+
+  const towardsHorizontal = input.pointerHorizontal - player.horizontalPosition;
+  const towardsVertical = input.pointerVertical - player.verticalPosition;
+
+  if (Math.hypot(towardsHorizontal, towardsVertical) < POINTER_DEAD_ZONE_PIXELS) {
+    return null;
+  }
+
+  if (Math.abs(towardsHorizontal) > Math.abs(towardsVertical)) {
+    return towardsHorizontal > 0 ? "right" : "left";
+  }
+
+  return towardsVertical > 0 ? "down" : "up";
+}
+
 export function updatePlayer(
   player: PlayerCharacter,
   input: PlayerInput,
@@ -94,7 +117,8 @@ export function updatePlayer(
   const normalisedVertical = input.vertical / length;
 
   if (player.activity === "standing") {
-    const facing = findFacingFromInput(input.horizontal, input.vertical);
+    const facingFromPointer = findFacingFromPointer(player, input);
+    const facing = facingFromPointer ?? findFacingFromInput(input.horizontal, input.vertical);
 
     if (facing) {
       player.facing = facing;
