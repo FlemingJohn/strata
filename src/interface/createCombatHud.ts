@@ -32,6 +32,7 @@ export function createCombatHud(): CombatHud {
   const healthBar = createBar("hud-bar-health");
   const staminaBar = createBar("hud-bar-stamina");
   const healthReading = createReading("hud-reading-health");
+  const shieldReading = createReading("hud-reading-shield");
 
   meters.append(healthBar, staminaBar);
 
@@ -54,7 +55,7 @@ export function createCombatHud(): CombatHud {
 
   right.append(enemyReading, weaponReading, novaReading, sharpReading);
 
-  element.append(meters, healthReading, middle, right);
+  element.append(meters, healthReading, shieldReading, middle, right);
 
   const healthFill = healthBar.firstElementChild as HTMLElement;
   const staminaFill = staminaBar.firstElementChild as HTMLElement;
@@ -70,6 +71,10 @@ export function createCombatHud(): CombatHud {
       staminaFill.style.width = `${Math.round(staminaShare * 100)}%`;
 
       healthReading.textContent = String(Math.max(0, Math.ceil(state.currentHealth)));
+
+      const hasShield = state.currentShield > 0;
+      shieldReading.hidden = !hasShield;
+      shieldReading.textContent = hasShield ? `+${Math.ceil(state.currentShield)}` : "";
       depthReading.textContent = `DEPTH ${state.floorNumber}`;
       blockReading.textContent = `BLOCK ${state.sourceBlockNumber.toLocaleString("en-GB")}`;
       roomReading.textContent = `ROOM ${state.roomProgress}`;
