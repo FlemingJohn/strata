@@ -24,7 +24,11 @@ export function createRelicFromTransaction(attempt: ProvingAttempt): EquippedRel
     return null;
   }
 
-  const origin = detectTransactionTrait(attempt.decoded, attempt.blockNumber);
+  const origin = detectTransactionTrait(
+    attempt.decoded,
+    attempt.blockNumber,
+    attempt.transactionHash
+  );
   const stratum = findStratumForBlock(attempt.blockNumber);
 
   return {
