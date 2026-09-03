@@ -1,8 +1,7 @@
 import type { PlacedStation, StationSheets } from "../types/station";
 import {
   STATION_GLOW_OPACITY,
-  STATION_GLOW_RADIUS_PIXELS,
-  STATION_PROMPT_RISE_PIXELS
+  STATION_GLOW_RADIUS_PIXELS
 } from "../constants/stationSettings";
 
 export function drawStations(
@@ -62,25 +61,4 @@ export function drawStations(
     );
     context.globalAlpha = 1;
   }
-}
-
-export function drawStationPrompt(
-  context: CanvasRenderingContext2D,
-  station: PlacedStation
-): void {
-  const text = `F  ${station.definition.label}`;
-  const top = station.verticalPosition - STATION_PROMPT_RISE_PIXELS;
-
-  context.font = "6px 'Silkscreen', monospace";
-  context.textAlign = "center";
-  context.textBaseline = "middle";
-
-  const width = context.measureText(text).width + 8;
-
-  context.fillStyle = "rgba(14, 10, 8, 0.82)";
-  context.fillRect(Math.round(station.horizontalPosition - width / 2), Math.round(top - 6), width, 12);
-  context.fillStyle = "#F5D18A";
-  context.fillText(text, Math.round(station.horizontalPosition), Math.round(top));
-  context.textAlign = "left";
-  context.textBaseline = "alphabetic";
 }
