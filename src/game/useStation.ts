@@ -18,13 +18,13 @@ export function useStation(player: PlayerCharacter, station: PlacedStation): str
     player.currentStamina = player.maximumStamina;
     player.secondsUntilCastReady = 0;
 
-    return `${definition.label} refills stamina and readies the nova`;
+    return `${definition.label} refills stamina and readies your blast`;
   }
 
   if (definition.reward === "sharpensWeapon") {
     player.secondsOfSharpenedWeapon = definition.rewardAmount;
 
-    return `${definition.label} sharpens the blade for ${definition.rewardAmount} seconds`;
+    return `${definition.label} sharpens your blade for ${definition.rewardAmount} seconds`;
   }
 
   player.maximumHealth += definition.rewardAmount;
