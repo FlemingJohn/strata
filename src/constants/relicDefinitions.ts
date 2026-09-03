@@ -13,27 +13,27 @@ const NO_EFFECT: RelicEffect = {
 };
 
 export const RELIC_DEFINITIONS: Record<RelicName, RelicDefinition> = {
-  frontierEmber: {
-    name: "frontierEmber",
-    displayName: "Frontier Ember",
+  firstLight: {
+    name: "firstLight",
+    displayName: "First Light",
     origin: "veryOldTransaction",
-    description: "Attacks pass through enemies",
+    description: "Your swing cuts through everyone it reaches",
     weaponSpriteIndex: 0,
     effect: { ...NO_EFFECT, attacksPassThroughEnemies: true }
   },
-  cursedSherd: {
-    name: "cursedSherd",
-    displayName: "Cursed Sherd",
+  brokenLuck: {
+    name: "brokenLuck",
+    displayName: "Broken Luck",
     origin: "failedTransaction",
-    description: "Deal thirty percent more damage and take fifteen percent more",
+    description: "You hit harder, you also get hurt more",
     weaponSpriteIndex: 1,
     effect: { ...NO_EFFECT, damageDealtMultiplier: 1.3, damageTakenMultiplier: 1.15 }
   },
-  apeMask: {
-    name: "apeMask",
-    displayName: "Ape Mask",
+  wildMask: {
+    name: "wildMask",
+    displayName: "Wild Mask",
     origin: "tokenMint",
-    description: "Every fifth hit summons an ally",
+    description: "Every fifth hit calls a helper to fight beside you",
     weaponSpriteIndex: 2,
     effect: { ...NO_EFFECT, spawnAllyEveryFifthHit: true }
   },
@@ -41,23 +41,23 @@ export const RELIC_DEFINITIONS: Record<RelicName, RelicDefinition> = {
     name: "warHelm",
     displayName: "War Helm",
     origin: "highGasTransaction",
-    description: "Rolling costs no stamina above half health",
+    description: "Rolling is free while you are above half health",
     weaponSpriteIndex: 3,
     effect: { ...NO_EFFECT, rollCostsNoStaminaAboveHalfHealth: true }
   },
-  vaultSeal: {
-    name: "vaultSeal",
-    displayName: "Vault Seal",
+  strongboxSeal: {
+    name: "strongboxSeal",
+    displayName: "Strongbox Seal",
     origin: "largeValueTransfer",
-    description: "Begin every room with twenty shield",
+    description: "You enter every room with twenty armour",
     weaponSpriteIndex: 4,
     effect: { ...NO_EFFECT, shieldGrantedPerRoom: 20 }
   },
-  forkCairn: {
-    name: "forkCairn",
-    displayName: "Fork Cairn",
+  secondChance: {
+    name: "secondChance",
+    displayName: "Second Chance",
     origin: "contractCreation",
-    description: "Return to life once each run at thirty percent health",
+    description: "The first time you fall, you get back up",
     weaponSpriteIndex: 5,
     effect: { ...NO_EFFECT, reviveOnceEachRun: true }
   },
@@ -65,7 +65,7 @@ export const RELIC_DEFINITIONS: Record<RelicName, RelicDefinition> = {
     name: "driftStone",
     displayName: "Drift Stone",
     origin: "plainTransfer",
-    description: "Move twelve percent faster",
+    description: "You move a little faster",
     weaponSpriteIndex: 6,
     effect: { ...NO_EFFECT, movementSpeedMultiplier: 1.12 }
   },
@@ -73,7 +73,7 @@ export const RELIC_DEFINITIONS: Record<RelicName, RelicDefinition> = {
     name: "ashShard",
     displayName: "Ash Shard",
     origin: "burnTransfer",
-    description: "Restore three health for every enemy killed",
+    description: "Every enemy you kill gives back a little health",
     weaponSpriteIndex: 7,
     effect: { ...NO_EFFECT, healthRestoredPerKill: 3 }
   }
