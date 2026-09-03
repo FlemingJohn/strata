@@ -76,7 +76,7 @@ export function showDeathScreen(
 
   const keepLine = document.createElement("p");
   keepLine.className = "screen-description";
-  keepLine.textContent = "Your relics are kept. They are your history.";
+  keepLine.textContent = "You keep every relic. They came from your own history.";
 
   const menu = createCursorMenu([
     {
