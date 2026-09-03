@@ -35,7 +35,10 @@ export function createEnemy(
     knockbackVertical: 0,
     chargeVelocityHorizontal: 0,
     chargeVelocityVertical: 0,
-    lastAttackIdentifierReceived: -1
+    lastAttackIdentifierReceived: -1,
+    strikeHorizontal: 0,
+    strikeVertical: 0,
+    hasStrikeLanded: false
   };
 }
 
