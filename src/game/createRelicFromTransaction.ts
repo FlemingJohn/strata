@@ -5,12 +5,12 @@ import { detectTransactionTrait } from "./detectTransactionTrait";
 import { findStratumForBlock } from "./findStratumForBlock";
 
 const RELIC_NAME_BY_ORIGIN: Record<RelicOrigin, RelicName> = {
-  failedTransaction: "cursedSherd",
-  contractCreation: "forkCairn",
-  tokenMint: "apeMask",
+  failedTransaction: "brokenLuck",
+  contractCreation: "secondChance",
+  tokenMint: "wildMask",
   burnTransfer: "ashShard",
-  veryOldTransaction: "frontierEmber",
-  largeValueTransfer: "vaultSeal",
+  veryOldTransaction: "firstLight",
+  largeValueTransfer: "strongboxSeal",
   highGasTransaction: "warHelm",
   plainTransfer: "driftStone"
 };
