@@ -56,7 +56,13 @@ export function plantTrees(
       );
 
       if (isClear && isAwayFromCentre && isAwayFromOtherTrees) {
-        planted.push({ sheetName, region, horizontalPosition, verticalPosition });
+        planted.push({
+          sheetName,
+          region,
+          horizontalPosition,
+          verticalPosition,
+          isBreakable: false
+        });
         blockRoomTiles(
           tileMap,
           horizontalPosition,
