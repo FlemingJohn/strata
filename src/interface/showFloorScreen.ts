@@ -103,22 +103,26 @@ export function showFloorScreen(container: HTMLElement, run: RunProgress): void 
 
   const subheading = document.createElement("p");
   subheading.className = "screen-description";
-  subheading.textContent = "This floor is that block. Anyone can verify it.";
+  subheading.textContent =
+    "This floor was built from that real block. Anyone can check it.";
 
   const facts = document.createElement("div");
   facts.className = "floor-facts";
   facts.append(
-    createFactRow("transactions in block", `about ${estimateTransactionCount(description.blockBusyness)}`),
+    createFactRow(
+      "payments in this block",
+      `about ${estimateTransactionCount(description.blockBusyness)}`
+    ),
     createFactRow("rooms", String(description.roomCount)),
-    createFactRow("difficulty", `x${description.difficultyMultiplier}`),
-    createFactRow("elites", String(description.eliteCount)),
-    createFactRow("treasure tier", String(description.treasureTier)),
-    createFactRow("layout seed", `${description.layoutSeed.slice(0, 18)}…`)
+    createFactRow("how hard", `x${description.difficultyMultiplier}`),
+    createFactRow("champions", String(description.eliteCount)),
+    createFactRow("treasure", String(description.treasureTier)),
+    createFactRow("built from", `${description.layoutSeed.slice(0, 18)}…`)
   );
 
   const legend = document.createElement("p");
   legend.className = "data-text";
-  legend.textContent = "◉ start   ▣ combat   ◆ relic   ☠ boss";
+  legend.textContent = "◉ start   ▣ fight   ◆ treasure   ☠ boss";
 
   const menu = createCursorMenu([
     {
