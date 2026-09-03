@@ -8,6 +8,8 @@ import {
 import { TILE_SIZE } from "../constants/tilesetSettings";
 import { collidesWithWall } from "./movePlayerThroughRoom";
 import { findTileKindAt } from "./findTileKindAt";
+import { blockRoomTiles } from "./blockRoomTiles";
+import { SOLID_LANDMARK_BASE_HEIGHT_PIXELS } from "../constants/solidObjectSettings";
 
 export function placeLandmark(
   tileMap: RoomTileMap,
@@ -40,6 +42,14 @@ export function placeLandmark(
     const isAwayFromTheDoorLine = Math.abs(horizontalPosition - roomWidth / 2) > 34;
 
     if (isClear && isAwayFromTheDoorLine) {
+      blockRoomTiles(
+        tileMap,
+        horizontalPosition,
+        verticalPosition,
+        region.width,
+        SOLID_LANDMARK_BASE_HEIGHT_PIXELS
+      );
+
       return { definition, region, horizontalPosition, verticalPosition };
     }
   }
