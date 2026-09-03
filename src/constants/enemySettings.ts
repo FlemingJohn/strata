@@ -105,7 +105,8 @@ export const ENEMY_DEFINITIONS: Record<EnemyName, EnemyDefinition> = {
 export const ENEMY_NAMES_BY_STRATUM: Record<number, EnemyName[]> = {
   1: ["skeleton", "skeleton", "skeletonRogue", "skeletonMage"],
   2: ["skeleton", "skeletonRogue", "skeletonMage", "skeletonWarrior", "orc"],
-  3: ["orc", "orcRogue", "orcShaman", "skeletonWarrior"]
+  3: ["orc", "orcRogue", "orcShaman", "skeletonWarrior"],
+  4: ["orcWarrior", "orcShaman", "orcRogue", "skeletonWarrior", "orc"]
 };
 
 export const BOSS_NAME: EnemyName = "orcWarrior";
