@@ -184,7 +184,11 @@ export function applyDamageToPlayer(
     1
   );
 
-  player.currentHealth -= damage * damageMultiplier;
+  const damageTaken = damage * damageMultiplier;
+  const damageAbsorbed = Math.min(player.currentShield, damageTaken);
+
+  player.currentShield -= damageAbsorbed;
+  player.currentHealth -= damageTaken - damageAbsorbed;
   player.secondsRemainingInvulnerable = INVULNERABLE_SECONDS_AFTER_TAKING_DAMAGE;
 
   const awayHorizontal = player.horizontalPosition - fromHorizontal;
