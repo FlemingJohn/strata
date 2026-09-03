@@ -39,7 +39,7 @@ function chooseEnemyNames(
   description: FloorDescription,
   nextRandomNumber: () => number
 ): EnemyName[] {
-  const stratumKey = Math.min(3, Math.max(1, 4 - description.stratumNumber));
+  const stratumKey = Math.min(4, Math.max(1, description.stratumNumber));
   const pool = ENEMY_NAMES_BY_STRATUM[stratumKey] ?? ENEMY_NAMES_BY_STRATUM[1];
 
   const desiredCount = Math.min(
