@@ -151,5 +151,5 @@ export const PROP_OPACITY = 0.95;
 export const BREAKABLE_PROP_SHEETS = ["resources", "dungeon", "furniture", "pan", "meat"];
 export const BREAKING_PARTICLE_COUNT = 12;
 export const BREAKING_PARTICLE_COLOUR = "#B9A184";
-export const CHANCE_A_BROKEN_PROP_HEALS = 0.22;
+export const CHANCE_A_BROKEN_PROP_HEALS = 0;
 export const HEALTH_FROM_A_BROKEN_PROP = 6;
