@@ -18,7 +18,6 @@ import { chooseAppearanceFromAddress, describeAppearance } from "../game/chooseA
 import { loadPropSheets } from "../rendering/loadPropSheets";
 import { loadStationSheets } from "../rendering/loadStationSheets";
 import { loadTreeSheets } from "../rendering/loadTreeSheets";
-import { loadSurvivorSprites } from "../rendering/loadSurvivorSprites";
 import { loadAnimatedPropSheets } from "../rendering/loadAnimatedPropSheets";
 import { loadLandmarkSheets } from "../rendering/loadLandmarkSheets";
 import { createCombatOverlay } from "./createCombatOverlay";
@@ -117,7 +116,6 @@ export function showCombatScreen(
     loadPropSheets(),
     loadStationSheets(),
     loadTreeSheets(),
-    loadSurvivorSprites(),
     loadAnimatedPropSheets(),
     loadLandmarkSheets(),
     waitForPixelFonts()
@@ -130,7 +128,6 @@ export function showCombatScreen(
         propSheets,
         stationSheets,
         treeSheets,
-        survivorSprites,
         animatedPropSheets,
         landmarkSheets
       ] = loaded;
@@ -146,7 +143,6 @@ export function showCombatScreen(
         propSheets,
         treeSheets,
         stationSheets,
-        survivorSprites,
         animatedPropSheets,
         landmarkSheets,
         overlay,
