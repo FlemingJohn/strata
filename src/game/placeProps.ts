@@ -11,6 +11,7 @@ import {
   PROP_CLUSTERS_PER_ROOM_MINIMUM,
   PROP_REGIONS
 } from "../constants/propSettings";
+import { BREAKABLE_PROP_SHEETS } from "../constants/propSettings";
 import {
   SMALLEST_SOLID_PROP_WIDTH,
   SOLID_PROP_BASE_HEIGHT_PIXELS
@@ -127,9 +128,17 @@ export function placeProps(
         );
 
         if (isSpotClear(tileMap, horizontalPosition, verticalPosition) && isAwayFromOtherProps) {
-          placed.push({ sheetName, region, horizontalPosition, verticalPosition });
+          const isSolid = region.width >= SMALLEST_SOLID_PROP_WIDTH;
 
-          if (region.width >= SMALLEST_SOLID_PROP_WIDTH) {
+          placed.push({
+            sheetName,
+            region,
+            horizontalPosition,
+            verticalPosition,
+            isBreakable: isSolid && BREAKABLE_PROP_SHEETS.includes(sheetName)
+          });
+
+          if (isSolid) {
             blockRoomTiles(
               tileMap,
               horizontalPosition,
