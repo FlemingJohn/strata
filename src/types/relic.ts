@@ -1,10 +1,10 @@
 export type RelicName =
-  | "frontierEmber"
-  | "cursedSherd"
-  | "apeMask"
+  | "firstLight"
+  | "brokenLuck"
+  | "wildMask"
   | "warHelm"
-  | "vaultSeal"
-  | "forkCairn"
+  | "strongboxSeal"
+  | "secondChance"
   | "driftStone"
   | "ashShard";
 
