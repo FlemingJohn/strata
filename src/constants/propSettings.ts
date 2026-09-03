@@ -147,3 +147,9 @@ export const DISTANCE_CLUSTERS_KEEP_APART = 58;
 export const DISTANCE_PROPS_KEEP_FROM_CENTRE = 52;
 export const DISTANCE_PROPS_KEEP_APART = 9;
 export const PROP_OPACITY = 0.95;
+
+export const BREAKABLE_PROP_SHEETS = ["resources", "dungeon", "furniture", "pan", "meat"];
+export const BREAKING_PARTICLE_COUNT = 12;
+export const BREAKING_PARTICLE_COLOUR = "#B9A184";
+export const CHANCE_A_BROKEN_PROP_HEALS = 0.22;
+export const HEALTH_FROM_A_BROKEN_PROP = 6;
