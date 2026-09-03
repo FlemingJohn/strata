@@ -72,14 +72,9 @@ import { countdownSharpenedWeapon, useStation } from "./useStation";
 import { plantTrees } from "./plantTrees";
 import { drawTrees } from "../rendering/drawTrees";
 import { TREE_STRATUM_NUMBER } from "../constants/treeSettings";
-import type { Survivor, SurvivorSpriteLibrary } from "../types/survivor";
-import { findSurvivorWithinReach, placeSurvivors } from "./placeSurvivors";
-import { updateSurvivors } from "./updateSurvivors";
-import { drawSurvivors } from "../rendering/drawSurvivors";
 import type { AnimatedPropSheets, PlacedAnimatedProp } from "../types/animatedProp";
 import type { CombatOverlay } from "../types/combatOverlay";
 import { STATION_PROMPT_RISE_PIXELS } from "../constants/stationSettings";
-import { SURVIVOR_PROMPT_RISE_PIXELS } from "../constants/survivorSettings";
 import { placeAnimatedProps } from "./placeAnimatedProps";
 import { drawAnimatedProps } from "../rendering/drawAnimatedProps";
 import type { LandmarkSheets, PlacedLandmark } from "../types/landmark";
@@ -89,10 +84,6 @@ import {
   FURNACE_LANDMARK_NAMES,
   LANDMARK_NAMES_BY_STRATUM
 } from "../constants/landmarkSettings";
-import {
-  SURVIVOR_LABELS,
-  SURVIVOR_TALK_REACH_PIXELS
-} from "../constants/survivorSettings";
 import {
   FURNACE_PROP_SHEETS,
   PROP_SHEETS_BY_STRATUM
@@ -161,7 +152,6 @@ export function runCombatLoop(
   propSheets: PropSheets,
   treeSheets: PropSheets,
   stationSheets: StationSheets,
-  survivorSprites: SurvivorSpriteLibrary,
   animatedPropSheets: AnimatedPropSheets,
   landmarkSheets: LandmarkSheets,
   overlay: CombatOverlay,
@@ -198,7 +188,6 @@ export function runCombatLoop(
   let props: PlacedProp[] = [];
   let stations: PlacedStation[] = [];
   let trees: PlacedProp[] = [];
-  let survivors: Survivor[] = [];
   let animatedProps: PlacedAnimatedProp[] = [];
   let landmark: PlacedLandmark | null = null;
   let wasUsingStationLastFrame = false;
@@ -289,19 +278,6 @@ export function runCombatLoop(
       : [];
   }
 
-  function gatherSurvivorsForCurrentRoom(): void {
-    survivors =
-      currentRoom.purpose === "start"
-        ? placeSurvivors(
-            tileMap,
-            floor.description,
-            createSeededRandomFromHash(
-              `${floor.description.layoutSeed}:${currentRoom.position.column}:${currentRoom.position.row}:survivors`
-            )
-          )
-        : [];
-  }
-
   function plantTreesForCurrentRoom(): void {
     trees =
       floor.description.stratumNumber === TREE_STRATUM_NUMBER && currentRoom.purpose !== "boss"
@@ -355,20 +331,7 @@ export function runCombatLoop(
       return;
     }
 
-    const survivor = findSurvivorWithinReach(
-      survivors,
-      player.horizontalPosition,
-      player.verticalPosition,
-      SURVIVOR_TALK_REACH_PIXELS
-    );
-
-    if (!survivor) {
-      return;
-    }
-
-    survivor.hasSpoken = true;
-    sound.play("doorOpens");
-    handlers.onStationUsed(`${SURVIVOR_LABELS[survivor.name]}: ${survivor.rumour}`);
+    overlay.hidePrompt();
   }
 
   function spawnForCurrentRoom(): void {
@@ -422,7 +385,6 @@ export function runCombatLoop(
     scatterPropsForCurrentRoom();
     raiseLandmarkForCurrentRoom();
     setAnimatedPropsForCurrentRoom();
-    gatherSurvivorsForCurrentRoom();
     plantTreesForCurrentRoom();
     raiseStationsForCurrentRoom();
     keepRoomWalkable(tileMap);
@@ -780,7 +742,6 @@ export function runCombatLoop(
     drawProps(context, props, propSheets);
     drawAnimatedProps(context, animatedProps, animatedPropSheets, elapsedSeconds);
     drawStations(context, stations, stationSheets, elapsedSeconds);
-    drawSurvivors(context, survivors, survivorSprites, elapsedSeconds);
     drawTrees(context, trees, treeSheets);
 
     if (currentRoom.purpose === "start" || currentRoom.purpose === "relic") {
@@ -865,23 +826,6 @@ export function runCombatLoop(
         horizontalPosition: station.horizontalPosition,
         verticalPosition: station.verticalPosition - STATION_PROMPT_RISE_PIXELS,
         isSpent: station.hasBeenUsed
-      });
-      return;
-    }
-
-    const survivor = findSurvivorWithinReach(
-      survivors,
-      player.horizontalPosition,
-      player.verticalPosition,
-      SURVIVOR_TALK_REACH_PIXELS
-    );
-
-    if (survivor) {
-      overlay.showPrompt({
-        text: SURVIVOR_LABELS[survivor.name],
-        horizontalPosition: survivor.horizontalPosition,
-        verticalPosition: survivor.verticalPosition - SURVIVOR_PROMPT_RISE_PIXELS,
-        isSpent: survivor.hasSpoken
       });
       return;
     }
@@ -975,7 +919,6 @@ export function runCombatLoop(
       ) {
         sound.play("hitConnects");
       }
-      updateSurvivors(survivors, tileMap, secondsElapsed);
       useStationWhenAsked();
       countdownSharpenedWeapon(player, secondsElapsed);
       applyEnemyStrikeDamage();
@@ -1055,7 +998,6 @@ export function runCombatLoop(
   scatterPropsForCurrentRoom();
   raiseLandmarkForCurrentRoom();
   setAnimatedPropsForCurrentRoom();
-  gatherSurvivorsForCurrentRoom();
   plantTreesForCurrentRoom();
   raiseStationsForCurrentRoom();
   keepRoomWalkable(tileMap);
