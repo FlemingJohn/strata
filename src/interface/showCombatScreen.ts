@@ -52,11 +52,12 @@ export function showCombatScreen(
 
   const status = document.createElement("p");
   status.className = "combat-status";
-  status.textContent = "loading the floor";
+  status.textContent = "getting the floor ready";
 
   const controls = document.createElement("p");
   controls.className = "combat-controls";
-  controls.textContent = "wasd move · j attack · k roll · l nova · f use · m mute · esc exit";
+  controls.textContent =
+    "wasd move · j attack · k roll · l blast · f use · m sound · esc leave";
 
   frame.append(canvas);
   stage.append(frame, status, controls);
