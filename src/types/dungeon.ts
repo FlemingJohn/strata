@@ -42,4 +42,5 @@ export interface RoomTileMap {
   columnCount: number;
   rowCount: number;
   tiles: TileKind[][];
+  blockedTiles: Set<string>;
 }
