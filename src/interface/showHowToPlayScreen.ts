@@ -1,22 +1,17 @@
+import type { HowToPlaySection } from "../constants/howToPlaySettings";
+import type { RoomPreviewController } from "../rendering/startRoomPreview";
 import { CONTROL_LINES } from "../constants/controlSettings";
-import { HOW_IT_WORKS_STEPS, THE_POINT_LINES } from "../constants/howToPlaySettings";
-import { createCursorMenu } from "./createCursorMenu";
+import { HOW_TO_PLAY_SECTIONS } from "../constants/howToPlaySettings";
+import { startRoomPreview } from "../rendering/startRoomPreview";
+import { startPracticeRun } from "../game/startPracticeRun";
 import { showTitleScreen } from "./showTitleScreen";
+import { findSoundEngine } from "../audio/sharedSoundEngine";
 
-function createControlRow(keys: string, action: string): HTMLElement {
-  const row = document.createElement("div");
-  row.className = "control-row";
-
-  const keyLabel = document.createElement("span");
-  keyLabel.className = "control-key";
-  keyLabel.textContent = keys;
-
-  const actionLabel = document.createElement("span");
-  actionLabel.className = "control-action";
-  actionLabel.textContent = action;
-
-  row.append(keyLabel, actionLabel);
-  return row;
+function createLine(text: string): HTMLElement {
+  const line = document.createElement("p");
+  line.className = "screen-description";
+  line.textContent = text;
+  return line;
 }
 
 function createStepRow(position: number, title: string, detail: string): HTMLElement {
@@ -43,104 +38,209 @@ function createStepRow(position: number, title: string, detail: string): HTMLEle
   return row;
 }
 
-function createRoomPreview(): HTMLElement {
-  const preview = document.createElement("pre");
-  preview.className = "room-preview";
-  preview.setAttribute("aria-hidden", "true");
-  preview.textContent = [
-    "#############+++############",
-    "#..........................#",
-    "#..OO...e..........e...OO..#",
-    "#..OO..................OO..#",
-    "#.........~~~~~............#",
-    "#....@....~~~~~....e.......#",
-    "#.........~~~~~............#",
-    "#..OO..............F...OO..#",
-    "#..OO..................OO..#",
-    "#############+++############"
-  ].join("\n");
-  return preview;
-}
+function createControlRow(keys: string, action: string): HTMLElement {
+  const row = document.createElement("div");
+  row.className = "control-row";
 
-function createLegend(): HTMLElement {
-  const legend = document.createElement("p");
-  legend.className = "data-text";
-  legend.textContent = "@ you   e enemy   O cover you can hide behind   ~ water slows you   F a fire you can use   + way out";
-  return legend;
+  const keyLabel = document.createElement("span");
+  keyLabel.className = "control-key";
+  keyLabel.textContent = keys;
+
+  const actionLabel = document.createElement("span");
+  actionLabel.className = "control-action";
+  actionLabel.textContent = action;
+
+  row.append(keyLabel, actionLabel);
+  return row;
 }
 
 export function showHowToPlayScreen(container: HTMLElement): void {
   container.replaceChildren();
 
+  const sound = findSoundEngine();
+  let sectionIndex = 0;
+  let preview: RoomPreviewController | null = null;
+
   const panel = document.createElement("section");
   panel.className = "screen-panel how-to-play-panel";
 
+  const top = document.createElement("div");
+  top.className = "how-top";
+
   const label = document.createElement("p");
   label.className = "screen-label";
-  label.textContent = "How to play";
+
+  const counter = document.createElement("span");
+  counter.className = "how-counter";
+
+  top.append(label, counter);
 
   const heading = document.createElement("h2");
   heading.className = "screen-heading";
-  heading.textContent = "Your own payments become the dungeon";
 
-  const point = document.createElement("div");
-  point.className = "column-stack";
+  const body = document.createElement("div");
+  body.className = "how-body";
 
-  for (const line of THE_POINT_LINES) {
-    const paragraph = document.createElement("p");
-    paragraph.className = "screen-description";
-    paragraph.textContent = line;
-    point.append(paragraph);
-  }
+  const foot = document.createElement("div");
+  foot.className = "how-foot";
 
-  const stepsLabel = document.createElement("p");
-  stepsLabel.className = "screen-label";
-  stepsLabel.textContent = "What happens";
+  const dots = document.createElement("div");
+  dots.className = "how-dots";
 
-  const steps = document.createElement("div");
-  steps.className = "how-steps";
+  const buttons = document.createElement("div");
+  buttons.className = "how-buttons";
 
-  HOW_IT_WORKS_STEPS.forEach((step, index) => {
-    steps.append(createStepRow(index + 1, step.title, step.detail));
+  const backButton = document.createElement("button");
+  backButton.type = "button";
+  backButton.className = "how-button";
+  backButton.textContent = "Back";
+
+  const nextButton = document.createElement("button");
+  nextButton.type = "button";
+  nextButton.className = "how-button";
+
+  buttons.append(backButton, nextButton);
+  foot.append(dots, buttons);
+
+  const dotButtons: HTMLButtonElement[] = HOW_TO_PLAY_SECTIONS.map((section, index) => {
+    const dot = document.createElement("button");
+    dot.type = "button";
+    dot.className = "how-dot";
+    dot.setAttribute("aria-label", `Section ${index + 1}, ${section.label}`);
+    dot.addEventListener("click", () => showSection(index));
+    dots.append(dot);
+    return dot;
   });
 
-  const roomLabel = document.createElement("p");
-  roomLabel.className = "screen-label";
-  roomLabel.textContent = "A room looks like this";
+  function fillBody(section: HowToPlaySection): void {
+    body.replaceChildren();
 
-  const controlsLabel = document.createElement("p");
-  controlsLabel.className = "screen-label";
-  controlsLabel.textContent = "Controls";
+    if (section.shape === "room") {
+      preview = startRoomPreview();
+      const frame = document.createElement("div");
+      frame.className = "preview-frame";
+      frame.append(preview.element);
+      body.append(frame);
+    }
 
-  const controls = document.createElement("div");
-  controls.className = "control-list";
+    if (section.lines.length > 0) {
+      const lines = document.createElement("div");
+      lines.className = "column-stack";
 
-  for (const line of CONTROL_LINES) {
-    controls.append(createControlRow(line.keys, line.action));
+      for (const line of section.lines) {
+        lines.append(createLine(line));
+      }
+
+      body.append(lines);
+    }
+
+    if (section.shape === "steps") {
+      const steps = document.createElement("div");
+      steps.className = "how-steps";
+
+      section.steps.forEach((step, index) => {
+        steps.append(createStepRow(index + 1, step.title, step.detail));
+      });
+
+      body.append(steps);
+    }
+
+    if (section.shape === "controls") {
+      const controls = document.createElement("div");
+      controls.className = "control-list";
+
+      for (const line of CONTROL_LINES) {
+        controls.append(createControlRow(line.keys, line.action));
+      }
+
+      body.append(controls);
+    }
   }
 
-  const menu = createCursorMenu([
-    {
-      label: "Back",
-      onChoose: () => {
-        menu.stopListening();
-        showTitleScreen(container);
-      }
+  function showSection(index: number): void {
+    if (preview) {
+      preview.stop();
+      preview = null;
     }
-  ]);
 
-  panel.append(
-    label,
-    heading,
-    point,
-    stepsLabel,
-    steps,
-    roomLabel,
-    createRoomPreview(),
-    createLegend(),
-    controlsLabel,
-    controls,
-    menu.element
-  );
+    sectionIndex = Math.max(0, Math.min(HOW_TO_PLAY_SECTIONS.length - 1, index));
+    const section = HOW_TO_PLAY_SECTIONS[sectionIndex];
+    const isLast = sectionIndex === HOW_TO_PLAY_SECTIONS.length - 1;
+
+    label.textContent = section.label;
+    counter.textContent = `${sectionIndex + 1} of ${HOW_TO_PLAY_SECTIONS.length}`;
+    heading.textContent = section.heading;
+    fillBody(section);
+
+    dotButtons.forEach((dot, dotIndex) => {
+      dot.setAttribute("aria-current", dotIndex === sectionIndex ? "true" : "false");
+    });
+
+    backButton.disabled = sectionIndex === 0;
+    nextButton.textContent = isLast ? "Play now" : "Next";
+    nextButton.classList.toggle("how-button-go", isLast);
+  }
+
+  function leave(): void {
+    if (preview) {
+      preview.stop();
+    }
+
+    window.removeEventListener("keydown", handleKeyDown);
+  }
+
+  function handleKeyDown(event: KeyboardEvent): void {
+    if (event.key === "ArrowRight") {
+      event.preventDefault();
+      stepForward();
+      return;
+    }
+
+    if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      sound.play("menuMove");
+      showSection(sectionIndex - 1);
+      return;
+    }
+
+    if (event.key === "Escape") {
+      leave();
+      showTitleScreen(container);
+    }
+  }
+
+  function stepForward(): void {
+    if (sectionIndex === HOW_TO_PLAY_SECTIONS.length - 1) {
+      sound.play("menuChoose");
+      leave();
+      startPracticeRun(container);
+      return;
+    }
+
+    sound.play("menuMove");
+    showSection(sectionIndex + 1);
+  }
+
+  backButton.addEventListener("click", () => {
+    sound.play("menuMove");
+    showSection(sectionIndex - 1);
+  });
+
+  nextButton.addEventListener("click", stepForward);
+
+  const leaveButton = document.createElement("button");
+  leaveButton.type = "button";
+  leaveButton.className = "how-leave";
+  leaveButton.textContent = "Back to the menu";
+  leaveButton.addEventListener("click", () => {
+    sound.play("menuChoose");
+    leave();
+    showTitleScreen(container);
+  });
+
+  window.addEventListener("keydown", handleKeyDown);
+
+  panel.append(top, heading, body, foot, leaveButton);
   container.append(panel);
+  showSection(0);
 }
