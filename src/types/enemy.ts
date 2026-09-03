@@ -13,7 +13,13 @@ export type EnemyName =
   | "eliteRogue"
   | "eliteWizard";
 
-export type EnemyBehaviour = "chasing" | "keepingDistance" | "windingUp" | "charging" | "recovering";
+export type EnemyBehaviour =
+  | "chasing"
+  | "keepingDistance"
+  | "windingUp"
+  | "striking"
+  | "charging"
+  | "recovering";
 
 export interface EnemyDefinition {
   name: EnemyName;
@@ -39,6 +45,9 @@ export interface EnemyCharacter {
   chargeVelocityHorizontal: number;
   chargeVelocityVertical: number;
   lastAttackIdentifierReceived: number;
+  strikeHorizontal: number;
+  strikeVertical: number;
+  hasStrikeLanded: boolean;
 }
 
 export interface Projectile {
