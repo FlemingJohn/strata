@@ -15,6 +15,7 @@ import { findMusicEngine } from "../audio/sharedMusicEngine";
 import { findSoundEngine } from "../audio/sharedSoundEngine";
 import { resumeAudioContext } from "../audio/findAudioContext";
 import { showLadderScreen } from "./showLadderScreen";
+import { showHowToPlayScreen } from "./showHowToPlayScreen";
 import { TITLE_SCREEN_CONTROL_HINT } from "../constants/titleScreenSettings";
 
 function createBackgroundCanvas(): HTMLCanvasElement {
@@ -154,6 +155,7 @@ export function showTitleScreen(container: HTMLElement): void {
   const menu = createCursorMenu([
     { label: "Connect wallet", onChoose: () => leaveForProving() },
     { label: "Demo wallet", onChoose: () => leaveForProving() },
+    { label: "How to play", onChoose: () => leaveForHowToPlay() },
     { label: "Ladder", onChoose: () => leaveForLadder() }
   ]);
 
@@ -161,6 +163,12 @@ export function showTitleScreen(container: HTMLElement): void {
     menu.stopListening();
     stopWaitingForFirstAction();
     showProvingScreen(container);
+  }
+
+  function leaveForHowToPlay(): void {
+    menu.stopListening();
+    stopWaitingForFirstAction();
+    showHowToPlayScreen(container);
   }
 
   function leaveForLadder(): void {
