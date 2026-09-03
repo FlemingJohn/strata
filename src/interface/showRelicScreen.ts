@@ -12,11 +12,11 @@ export function showRelicScreen(container: HTMLElement, relics: EquippedRelic[])
 
   const label = document.createElement("p");
   label.className = "screen-label";
-  label.textContent = "Recovered from your history";
+  label.textContent = "Dug out of your own history";
 
   const heading = document.createElement("h2");
   heading.className = "screen-heading";
-  heading.textContent = `${relics.length} relics recovered`;
+  heading.textContent = `${relics.length} relics found`;
 
   const grid = document.createElement("div");
   grid.className = "relic-grid";
