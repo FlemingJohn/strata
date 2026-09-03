@@ -41,4 +41,8 @@ export interface PlayerCharacter {
   currentAttackIdentifier: number;
   secondsUntilCastReady: number;
   secondsOfSharpenedWeapon: number;
+
+  currentShield: number;
+  hitsLandedSinceLastAlly: number;
+  hasUsedRevive: boolean;
 }
