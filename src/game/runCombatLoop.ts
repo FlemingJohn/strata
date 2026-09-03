@@ -103,12 +103,12 @@ import {
   updateShockwaves
 } from "./createShockwave";
 import {
-  NOVA_COLOUR,
-  NOVA_DAMAGE,
-  NOVA_EXPAND_SECONDS,
-  NOVA_KNOCKBACK_SPEED,
-  NOVA_MAXIMUM_RADIUS_PIXELS,
-  NOVA_SELF_DAMAGE,
+  BLAST_COLOUR,
+  BLAST_DAMAGE,
+  BLAST_EXPAND_SECONDS,
+  BLAST_KNOCKBACK_SPEED,
+  BLAST_MAXIMUM_RADIUS_PIXELS,
+  BLAST_SELF_DAMAGE,
   SLAM_COLOUR,
   SLAM_COOLDOWN_SECONDS,
   SLAM_DAMAGE,
@@ -443,11 +443,11 @@ export function runCombatLoop(
         createShockwave(
           player.horizontalPosition,
           player.verticalPosition,
-          NOVA_MAXIMUM_RADIUS_PIXELS,
-          NOVA_EXPAND_SECONDS,
-          NOVA_DAMAGE,
+          BLAST_MAXIMUM_RADIUS_PIXELS,
+          BLAST_EXPAND_SECONDS,
+          BLAST_DAMAGE,
           "player",
-          NOVA_COLOUR
+          BLAST_COLOUR
         )
       );
       sound.play("enemyDies");
@@ -456,10 +456,10 @@ export function runCombatLoop(
         player.horizontalPosition,
         player.verticalPosition,
         18,
-        NOVA_COLOUR,
+        BLAST_COLOUR,
         150
       );
-      player.currentHealth -= NOVA_SELF_DAMAGE;
+      player.currentHealth -= BLAST_SELF_DAMAGE;
       feedback.secondsOfHitStopRemaining = Math.max(feedback.secondsOfHitStopRemaining, 0.09);
 
       if (!respectsReducedMotion) {
@@ -527,12 +527,12 @@ export function runCombatLoop(
           enemy.secondsRemainingFlashing = 0.09;
           const away = Math.max(1, distance);
           enemy.knockbackHorizontal =
-            ((enemy.horizontalPosition - wave.horizontalPosition) / away) * NOVA_KNOCKBACK_SPEED;
+            ((enemy.horizontalPosition - wave.horizontalPosition) / away) * BLAST_KNOCKBACK_SPEED;
           enemy.knockbackVertical =
-            ((enemy.verticalPosition - wave.verticalPosition) / away) * NOVA_KNOCKBACK_SPEED;
+            ((enemy.verticalPosition - wave.verticalPosition) / away) * BLAST_KNOCKBACK_SPEED;
 
           if (enemy.currentHealth <= 0) {
-            burstParticles(particles, enemy.horizontalPosition, enemy.verticalPosition, 20, NOVA_COLOUR, 160);
+            burstParticles(particles, enemy.horizontalPosition, enemy.verticalPosition, 20, BLAST_COLOUR, 160);
             enemies.splice(index, 1);
             totalKills += 1;
           }
@@ -552,7 +552,7 @@ export function runCombatLoop(
           wave.damage,
           wave.horizontalPosition,
           wave.verticalPosition,
-          NOVA_KNOCKBACK_SPEED
+          BLAST_KNOCKBACK_SPEED
         );
 
         if (wasHurt) {
