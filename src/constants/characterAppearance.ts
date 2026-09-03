@@ -4,8 +4,7 @@ export interface AppearanceSlot {
 }
 
 export const HEAD_OPTIONS: AppearanceSlot[] = [
-  { folderName: "head", displayName: "human" },
-  { folderName: "headOrc", displayName: "orc" }
+  { folderName: "head", displayName: "human" }
 ];
 
 export const TORSO_OPTIONS: AppearanceSlot[] = [
