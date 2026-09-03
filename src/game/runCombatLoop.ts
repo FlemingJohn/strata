@@ -53,6 +53,15 @@ import { placeFires } from "./placeFires";
 import { placeProps } from "./placeProps";
 import { keepRoomWalkable } from "./keepRoomWalkable";
 import { breakPropsInReach } from "./breakProps";
+import type { Ally } from "../types/ally";
+import { createAlly } from "./createAlly";
+import { updateAllies } from "./updateAllies";
+import { drawAllies } from "../rendering/drawAllies";
+import {
+  countHitTowardsAnAlly,
+  grantShieldForNewRoom,
+  reviveWhenAllowed
+} from "./applyRelicPowers";
 import { findActiveAttackArea } from "./resolveAttackHits";
 import { drawProps } from "../rendering/drawProps";
 import type { PlacedStation, StationSheets } from "../types/station";
@@ -185,6 +194,7 @@ export function runCombatLoop(
   const embers: Ember[] = [];
   let dyingEnemies: DyingEnemy[] = [];
   const shockwaves: Shockwave[] = [];
+  const allies: Ally[] = [];
   let wasCastingLastFrame = false;
   let secondsUntilBossSlam = SLAM_COOLDOWN_SECONDS;
   let theme = findAreaTheme(stratum.stratumNumber, currentRoom.purpose);
@@ -402,6 +412,8 @@ export function runCombatLoop(
     plantTreesForCurrentRoom();
     raiseStationsForCurrentRoom();
     keepRoomWalkable(tileMap);
+    allies.length = 0;
+    grantShieldForNewRoom(player);
     spawnForCurrentRoom();
 
     if (cameFrom) {
@@ -765,6 +777,7 @@ export function runCombatLoop(
     drawEntityShadow(context, player.horizontalPosition, player.verticalPosition, 14);
     drawDyingEnemies(context, dyingEnemies, enemySprites);
     drawEnemies(context, enemies, enemySprites, animationFrameIndex);
+    drawAllies(context, allies, enemySprites, animationFrameIndex);
     drawPlayer();
     drawProjectiles(context, projectiles);
     drawParticles(context, particles);
@@ -794,6 +807,7 @@ export function runCombatLoop(
       maximumHealth: player.maximumHealth,
       currentStamina: player.currentStamina,
       maximumStamina: player.maximumStamina,
+      currentShield: player.currentShield,
       floorNumber: floor.description.floorNumber,
       sourceBlockNumber: floor.description.sourceBlockNumber,
       enemiesRemaining: enemies.length,
@@ -885,7 +899,7 @@ export function runCombatLoop(
       updateEnemies(enemies, projectiles, player, tileMap, secondsElapsed);
       updateProjectiles(projectiles, tileMap, secondsElapsed);
       const enemiesBeforeAttack = enemies.length;
-      const killsThisFrame = resolveAttackHits(
+      const attackResult = resolveAttackHits(
         player,
         enemies,
         particles,
@@ -893,7 +907,17 @@ export function runCombatLoop(
         respectsReducedMotion,
         dyingEnemies
       );
+      const killsThisFrame = attackResult.killCount;
       totalKills += killsThisFrame;
+
+      for (let hit = 0; hit < attackResult.hitCount; hit++) {
+        if (countHitTowardsAnAlly(player)) {
+          allies.push(createAlly(player.horizontalPosition, player.verticalPosition));
+          sound.play("relicFound");
+        }
+      }
+
+      totalKills += updateAllies(allies, enemies, tileMap, secondsElapsed);
 
       const attackArea = findActiveAttackArea(player);
 
@@ -946,6 +970,18 @@ export function runCombatLoop(
     decayImpactFeedback(feedback, secondsElapsed);
     drawEverything();
 
+    if (player.currentHealth <= 0 && reviveWhenAllowed(player)) {
+      sound.play("relicFound");
+      burstParticles(
+        particles,
+        player.horizontalPosition,
+        player.verticalPosition,
+        24,
+        "#F5D18A",
+        170
+      );
+    }
+
     if (player.currentHealth <= 0) {
       isRunning = false;
       inputReader.stopListening();
@@ -973,6 +1009,7 @@ export function runCombatLoop(
   plantTreesForCurrentRoom();
   raiseStationsForCurrentRoom();
   keepRoomWalkable(tileMap);
+  grantShieldForNewRoom(player);
   spawnForCurrentRoom();
   handlers.onRoomEntered(currentRoom, countClearedRooms());
   animationHandle = window.requestAnimationFrame(renderFrame);
