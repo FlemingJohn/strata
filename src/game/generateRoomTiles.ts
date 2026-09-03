@@ -100,5 +100,10 @@ export function generateRoomTiles(room: DungeonRoom, layoutSeed: string): RoomTi
 
   carveDoors(tiles, room);
 
-  return { columnCount: ROOM_TILE_COLUMNS, rowCount: ROOM_TILE_ROWS, tiles };
+  return {
+    columnCount: ROOM_TILE_COLUMNS,
+    rowCount: ROOM_TILE_ROWS,
+    tiles,
+    blockedTiles: new Set<string>()
+  };
 }
