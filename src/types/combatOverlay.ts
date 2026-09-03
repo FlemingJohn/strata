@@ -3,6 +3,7 @@ export interface CombatHudState {
   maximumHealth: number;
   currentStamina: number;
   maximumStamina: number;
+  currentShield: number;
   floorNumber: number;
   sourceBlockNumber: number;
   enemiesRemaining: number;
