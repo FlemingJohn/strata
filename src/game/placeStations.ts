@@ -9,6 +9,7 @@ import {
 import { TILE_SIZE } from "../constants/tilesetSettings";
 import { collidesWithWall } from "./movePlayerThroughRoom";
 import { findTileKindAt } from "./findTileKindAt";
+import { blockRoomTiles } from "./blockRoomTiles";
 
 function findStationCount(purpose: RoomPurpose, nextRandomNumber: () => number): number {
   if (purpose === "start" || purpose === "relic") {
@@ -74,6 +75,7 @@ export function placeStations(
           verticalPosition,
           hasBeenUsed: false
         });
+        blockRoomTiles(tileMap, horizontalPosition, verticalPosition, appearance.frameWidth / 2, 8);
         break;
       }
     }
