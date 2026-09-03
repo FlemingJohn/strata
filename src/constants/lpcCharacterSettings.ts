@@ -7,7 +7,6 @@ export const LPC_ROW_FACING_DOWN = 2;
 export const LPC_ROW_FACING_RIGHT = 3;
 
 export const LPC_GROUND_OFFSET_PIXELS = 58;
-export const TITLE_SCREEN_HERO_SCALE = 3;
 
 export type LpcAnimationName =
   | "idle"
