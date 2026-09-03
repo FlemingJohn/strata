@@ -1,0 +1,3 @@
+export const FIRST_DEPTH = 1;
+export const HEALTH_RESTORED_BETWEEN_FLOORS = 35;
+export const HEALTH_KEPT_LOWEST_SHARE = 0.35;
