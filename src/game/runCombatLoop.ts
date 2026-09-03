@@ -51,6 +51,7 @@ import { findAreaTheme } from "../constants/areaThemes";
 import { findStratumForBlock } from "./findStratumForBlock";
 import { placeFires } from "./placeFires";
 import { placeProps } from "./placeProps";
+import { keepRoomWalkable } from "./keepRoomWalkable";
 import { drawProps } from "../rendering/drawProps";
 import type { PlacedStation, StationSheets } from "../types/station";
 import { findStationWithinReach, placeStations } from "./placeStations";
@@ -398,6 +399,7 @@ export function runCombatLoop(
     gatherSurvivorsForCurrentRoom();
     plantTreesForCurrentRoom();
     raiseStationsForCurrentRoom();
+    keepRoomWalkable(tileMap);
     spawnForCurrentRoom();
 
     if (cameFrom) {
@@ -958,6 +960,7 @@ export function runCombatLoop(
   gatherSurvivorsForCurrentRoom();
   plantTreesForCurrentRoom();
   raiseStationsForCurrentRoom();
+  keepRoomWalkable(tileMap);
   spawnForCurrentRoom();
   handlers.onRoomEntered(currentRoom, countClearedRooms());
   animationHandle = window.requestAnimationFrame(renderFrame);
