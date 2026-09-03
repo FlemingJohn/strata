@@ -1,13 +1,18 @@
 import type { PlayerCharacter } from "../types/player";
 import type { RoomTileMap } from "../types/dungeon";
 import { TILE_SIZE } from "../constants/tilesetSettings";
+import { nameTile } from "./blockRoomTiles";
 
 export function isTileBlocking(tileMap: RoomTileMap, column: number, row: number): boolean {
   if (column < 0 || row < 0 || column >= tileMap.columnCount || row >= tileMap.rowCount) {
     return true;
   }
 
-  return tileMap.tiles[row][column] === "wall";
+  if (tileMap.tiles[row][column] === "wall") {
+    return true;
+  }
+
+  return tileMap.blockedTiles.has(nameTile(column, row));
 }
 
 export function collidesWithWall(
