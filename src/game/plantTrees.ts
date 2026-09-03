@@ -10,6 +10,11 @@ import {
 import { TILE_SIZE } from "../constants/tilesetSettings";
 import { collidesWithWall } from "./movePlayerThroughRoom";
 import { findTileKindAt } from "./findTileKindAt";
+import { blockRoomTiles } from "./blockRoomTiles";
+import {
+  SOLID_TREE_TRUNK_HEIGHT_PIXELS,
+  SOLID_TREE_TRUNK_WIDTH_PIXELS
+} from "../constants/solidObjectSettings";
 
 export function plantTrees(
   tileMap: RoomTileMap,
@@ -52,6 +57,13 @@ export function plantTrees(
 
       if (isClear && isAwayFromCentre && isAwayFromOtherTrees) {
         planted.push({ sheetName, region, horizontalPosition, verticalPosition });
+        blockRoomTiles(
+          tileMap,
+          horizontalPosition,
+          verticalPosition,
+          SOLID_TREE_TRUNK_WIDTH_PIXELS,
+          SOLID_TREE_TRUNK_HEIGHT_PIXELS
+        );
         break;
       }
     }
