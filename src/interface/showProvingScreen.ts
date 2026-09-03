@@ -2,7 +2,6 @@ import type { ProvingAttempt, ProvingStatus } from "../types/proving";
 import { DEMO_WALLET_TRANSACTIONS } from "../constants/demoTransactions";
 import {
   BLOCK_PROVER_PRECOMPILE_ADDRESS,
-  CHAIN_INFO_PRECOMPILE_ADDRESS,
   ETHERSCAN_TRANSACTION_URL
 } from "../constants/networkSettings";
 import { createCreditcoinProvider } from "../chain/createCreditcoinProvider";
@@ -39,19 +38,19 @@ function describeAttempt(attempt: ProvingAttempt): string {
   }
 
   if (attempt.status === "building") {
-    return "building proof";
+    return "gathering proof";
   }
 
   if (attempt.status === "verifying") {
-    return "verifying on chain";
+    return "checking on Creditcoin";
   }
 
   if (attempt.status === "verified") {
-    const cachedLabel = attempt.wasCached ? " cached" : "";
-    return `${attempt.continuityRootCount} roots${cachedLabel}`;
+    const cachedLabel = attempt.wasCached ? " already known" : "";
+    return `proved${cachedLabel}`;
   }
 
-  return "queued";
+  return "waiting";
 }
 
 function createProofRow(attempt: ProvingAttempt): HTMLElement {
@@ -92,7 +91,7 @@ export function showProvingScreen(container: HTMLElement): void {
 
   const label = document.createElement("p");
   label.className = "screen-label";
-  label.textContent = "Proving on Creditcoin";
+  label.textContent = "Checking on Creditcoin";
 
   const heading = document.createElement("h2");
   heading.className = "screen-heading";
@@ -100,40 +99,41 @@ export function showProvingScreen(container: HTMLElement): void {
 
   const counter = document.createElement("p");
   counter.className = "data-text";
-  counter.textContent = `0 of ${DEMO_WALLET_TRANSACTIONS.length} verified`;
+  counter.textContent = `0 of ${DEMO_WALLET_TRANSACTIONS.length} proved`;
 
   const rowContainer = document.createElement("div");
   rowContainer.className = "column-stack";
 
   const precompileNote = document.createElement("p");
   precompileNote.className = "data-text";
-  precompileNote.textContent = `block prover ${BLOCK_PROVER_PRECOMPILE_ADDRESS.slice(0, 10)}… · chain info ${CHAIN_INFO_PRECOMPILE_ADDRESS.slice(0, 10)}…`;
+  precompileNote.textContent =
+    `checked by Creditcoin itself · ${BLOCK_PROVER_PRECOMPILE_ADDRESS.slice(0, 10)}…`;
 
   panel.append(label, heading, counter, rowContainer, precompileNote);
   container.append(panel);
 
   function renderAttempts(attempts: ProvingAttempt[]): void {
     rowContainer.replaceChildren(...attempts.map(createProofRow));
-    counter.textContent = `${countVerified(attempts)} of ${attempts.length} verified`;
+    counter.textContent = `${countVerified(attempts)} of ${attempts.length} proved`;
   }
 
   const provider = createCreditcoinProvider();
 
   findEthereumChainKey(provider)
     .then((chainKey) => {
-      heading.textContent = `Proving against chain key ${chainKey}`;
+      heading.textContent = "Checking your payments against Ethereum";
       return proveTransactions(provider, chainKey, DEMO_WALLET_TRANSACTIONS, renderAttempts);
     })
     .then((attempts) => {
       const relics = createRelicsFromTransactions(attempts);
-      heading.textContent = `${relics.length} relics recovered`;
+      heading.textContent = `${relics.length} relics dug up`;
 
       if (relics.length > 0) {
         window.setTimeout(() => showRelicScreen(container, relics), REVEAL_DELAY_MILLISECONDS);
       }
     })
     .catch((failure) => {
-      heading.textContent = "Creditcoin could not be reached";
+      heading.textContent = "Could not reach Creditcoin";
       counter.textContent = failure instanceof Error ? failure.message : String(failure);
     });
 }
