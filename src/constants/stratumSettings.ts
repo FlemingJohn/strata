@@ -11,7 +11,7 @@ export interface StratumSettings {
 export const STRATUM_SETTINGS: StratumSettings[] = [
   {
     stratumNumber: 1,
-    displayName: "Surface",
+    displayName: "Today",
     earliestBlockNumber: 20000000,
     latestBlockNumber: 99999999,
     approximateYear: 2025,
@@ -20,7 +20,7 @@ export const STRATUM_SETTINGS: StratumSettings[] = [
   },
   {
     stratumNumber: 2,
-    displayName: "The Boom",
+    displayName: "The Good Years",
     earliestBlockNumber: 10000000,
     latestBlockNumber: 19999999,
     approximateYear: 2021,
@@ -29,7 +29,7 @@ export const STRATUM_SETTINGS: StratumSettings[] = [
   },
   {
     stratumNumber: 3,
-    displayName: "The Winter",
+    displayName: "The Hard Years",
     earliestBlockNumber: 3000000,
     latestBlockNumber: 9999999,
     approximateYear: 2018,
@@ -38,7 +38,7 @@ export const STRATUM_SETTINGS: StratumSettings[] = [
   },
   {
     stratumNumber: 4,
-    displayName: "Bedrock",
+    displayName: "The Beginning",
     earliestBlockNumber: 0,
     latestBlockNumber: 2999999,
     approximateYear: 2015,
