@@ -138,6 +138,12 @@ export const PROP_SHEETS_BY_STRATUM: Record<number, string[]> = {
 };
 
 export const FURNACE_PROP_SHEETS = ["dungeon", "esoteric", "meat", "pan"];
-export const PROPS_PER_ROOM_MINIMUM = 5;
-export const PROPS_PER_ROOM_MAXIMUM = 12;
+export const PROP_CLUSTERS_PER_ROOM_MINIMUM = 5;
+export const PROP_CLUSTERS_PER_ROOM_MAXIMUM = 9;
+export const PROPS_PER_CLUSTER_MINIMUM = 3;
+export const PROPS_PER_CLUSTER_MAXIMUM = 6;
+export const CLUSTER_SPREAD_PIXELS = 26;
+export const DISTANCE_CLUSTERS_KEEP_APART = 58;
+export const DISTANCE_PROPS_KEEP_FROM_CENTRE = 52;
+export const DISTANCE_PROPS_KEEP_APART = 9;
 export const PROP_OPACITY = 0.95;
