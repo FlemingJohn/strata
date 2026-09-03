@@ -44,7 +44,7 @@ export function showLoadoutScreen(container: HTMLElement, relics: EquippedRelic[
 
   const label = document.createElement("p");
   label.className = "screen-label";
-  label.textContent = "Equip three";
+  label.textContent = "Pick three to carry";
 
   const heading = document.createElement("h2");
   heading.className = "screen-heading";
@@ -62,9 +62,12 @@ export function showLoadoutScreen(container: HTMLElement, relics: EquippedRelic[
     const deepest = findDeepestRelic(chosenRelics);
     const damage = WEAPON_DAMAGE[style];
     const duration = WEAPON_DURATION[style];
-    const origin = deepest ? `block ${deepest.sourceBlockNumber.toLocaleString("en-GB")}` : "no relic";
+    const oldestBlock = deepest
+      ? `oldest block ${deepest.sourceBlockNumber.toLocaleString("en-GB")}`
+      : "nothing picked yet";
 
-    weaponLine.textContent = `weapon ${style} · ${damage} damage · ${duration}s · from ${origin}`;
+    weaponLine.textContent =
+      `your weapon: ${style} · ${damage} damage · ${duration}s swing · ${oldestBlock}`;
   }
 
   function renderList(): void {
