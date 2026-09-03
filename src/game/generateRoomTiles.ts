@@ -8,6 +8,7 @@ import {
 } from "../constants/dungeonSettings";
 import { createSeededRandomFromHash } from "./createSeededRandomFromHash";
 import { pourWaterPools } from "./pourWaterPools";
+import { shapeRoomByPurpose } from "./shapeRoomByPurpose";
 
 const DOOR_HALF_WIDTH = 1;
 
@@ -89,6 +90,8 @@ export function generateRoomTiles(room: DungeonRoom, layoutSeed: string): RoomTi
   const roomSeed = `${layoutSeed}:${room.position.column}:${room.position.row}`;
   const nextRandomNumber = createSeededRandomFromHash(roomSeed);
   const tiles = createEmptyRoom();
+
+  shapeRoomByPurpose(tiles, room.purpose, nextRandomNumber);
 
   if (room.purpose === "combat") {
     addObstacles(tiles, nextRandomNumber);
