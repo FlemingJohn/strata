@@ -50,10 +50,10 @@ export function createCombatHud(): CombatHud {
 
   const enemyReading = createReading("hud-reading-enemies");
   const weaponReading = createReading("hud-reading-faint");
-  const novaReading = createReading("hud-reading-nova");
+  const blastReading = createReading("hud-reading-blast");
   const sharpReading = createReading("hud-reading-sharp");
 
-  right.append(enemyReading, weaponReading, novaReading, sharpReading);
+  right.append(enemyReading, weaponReading, blastReading, sharpReading);
 
   element.append(meters, healthReading, shieldReading, middle, right);
 
@@ -87,10 +87,10 @@ export function createCombatHud(): CombatHud {
       weaponReading.textContent = state.weaponStyle.toUpperCase();
 
       const isCastReady = state.secondsUntilCastReady <= 0;
-      novaReading.textContent = isCastReady
+      blastReading.textContent = isCastReady
         ? "BLAST READY"
         : `BLAST ${Math.ceil(state.secondsUntilCastReady)}s`;
-      novaReading.classList.toggle("hud-reading-ready", isCastReady);
+      blastReading.classList.toggle("hud-reading-ready", isCastReady);
 
       const isSharpened = state.secondsOfSharpenedWeapon > 0;
       sharpReading.hidden = !isSharpened;
