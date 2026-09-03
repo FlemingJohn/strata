@@ -52,6 +52,8 @@ import { findStratumForBlock } from "./findStratumForBlock";
 import { placeFires } from "./placeFires";
 import { placeProps } from "./placeProps";
 import { keepRoomWalkable } from "./keepRoomWalkable";
+import { breakPropsInReach } from "./breakProps";
+import { findActiveAttackArea } from "./resolveAttackHits";
 import { drawProps } from "../rendering/drawProps";
 import type { PlacedStation, StationSheets } from "../types/station";
 import { findStationWithinReach, placeStations } from "./placeStations";
@@ -892,6 +894,16 @@ export function runCombatLoop(
         dyingEnemies
       );
       totalKills += killsThisFrame;
+
+      const attackArea = findActiveAttackArea(player);
+
+      if (attackArea) {
+        const brokenCount = breakPropsInReach(props, tileMap, player, particles, attackArea);
+
+        if (brokenCount > 0) {
+          sound.play("hitConnects");
+        }
+      }
 
       if (killsThisFrame > 0) {
         sound.play("enemyDies");
