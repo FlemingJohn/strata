@@ -565,3 +565,93 @@
 .hud-reading-shield {
   color: #7fb4d8;
 }
+
+.how-to-play-panel {
+  max-width: 760px;
+  max-height: 88vh;
+  overflow-y: auto;
+}
+
+.how-steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-small);
+}
+
+.how-step {
+  display: flex;
+  gap: var(--spacing-medium);
+  align-items: flex-start;
+}
+
+.how-step-number {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  background: var(--colour-well);
+  border: 2px solid var(--colour-border-dark);
+  color: var(--colour-bedrock);
+  font-family: var(--font-body);
+  font-size: 16px;
+}
+
+.how-step-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.how-step-title {
+  color: var(--colour-text);
+  font-size: var(--text-size-small);
+  text-transform: uppercase;
+}
+
+.how-step-detail {
+  color: var(--colour-text-muted);
+  font-size: var(--text-size-small);
+  line-height: 24px;
+}
+
+.room-preview {
+  margin: 0;
+  padding: var(--spacing-medium);
+  background: var(--colour-well);
+  border: 2px solid var(--colour-border-dark);
+  color: var(--colour-text-muted);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 16px;
+  overflow-x: auto;
+}
+
+.control-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.control-row {
+  display: flex;
+  gap: var(--spacing-medium);
+  align-items: baseline;
+}
+
+.control-key {
+  flex: none;
+  min-width: 130px;
+  padding: 4px 8px;
+  background: var(--colour-well);
+  border: 2px solid var(--colour-border-dark);
+  color: var(--colour-bedrock);
+  font-family: var(--font-body);
+  font-size: 16px;
+  text-align: center;
+}
+
+.control-action {
+  color: var(--colour-text-muted);
+  font-size: var(--text-size-small);
+}
