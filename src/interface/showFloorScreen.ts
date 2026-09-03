@@ -1,10 +1,10 @@
 import type { DungeonFloor, DungeonRoom, RoomPurpose } from "../types/dungeon";
-import type { EquippedRelic } from "../types/relic";
+import type { RunProgress } from "../types/runProgress";
 import { FLOOR_GRID_COLUMNS, FLOOR_GRID_ROWS } from "../constants/dungeonSettings";
 import { STRATUM_SETTINGS } from "../constants/stratumSettings";
 import { createFloorDescription, estimateTransactionCount } from "../game/createFloorDescription";
 import { generateDungeonFloor } from "../game/generateDungeonFloor";
-import { findDeepestRelic } from "../game/chooseWeaponStyle";
+import { chooseRelicForDepth, countFloorsAvailable } from "../game/chooseBlockForDepth";
 import { createCursorMenu } from "./createCursorMenu";
 import { showCombatScreen } from "./showCombatScreen";
 
@@ -67,32 +67,33 @@ function createFloorGrid(floor: DungeonFloor): HTMLElement {
   return grid;
 }
 
-export function showFloorScreen(container: HTMLElement, relics: EquippedRelic[]): void {
+export function showFloorScreen(container: HTMLElement, run: RunProgress): void {
   container.replaceChildren();
 
-  const deepestRelic = findDeepestRelic(relics);
+  const relicForThisFloor = chooseRelicForDepth(run.provenRelics, run.depth);
+  const floorsAvailable = countFloorsAvailable(run.provenRelics);
 
   const panel = document.createElement("section");
   panel.className = "screen-panel";
 
   const label = document.createElement("p");
   label.className = "screen-label";
-  label.textContent = "Opening floor";
+  label.textContent = `Opening floor ${run.depth} of ${floorsAvailable}`;
 
   const heading = document.createElement("h2");
   heading.className = "screen-heading";
 
-  if (!deepestRelic) {
-    heading.textContent = "No relic to descend with";
+  if (!relicForThisFloor) {
+    heading.textContent = "No block left to open";
     panel.append(label, heading);
     container.append(panel);
     return;
   }
 
-  const description = createFloorDescription(0, {
-    blockNumber: deepestRelic.sourceBlockNumber,
-    transactionMerkleRoot: deepestRelic.sourceMerkleRoot,
-    merkleSiblingCount: deepestRelic.sourceMerkleDepth,
+  const description = createFloorDescription(run.depth, {
+    blockNumber: relicForThisFloor.sourceBlockNumber,
+    transactionMerkleRoot: relicForThisFloor.sourceMerkleRoot,
+    merkleSiblingCount: relicForThisFloor.sourceMerkleDepth,
     continuityRootCount: 0
   });
 
@@ -121,10 +122,10 @@ export function showFloorScreen(container: HTMLElement, relics: EquippedRelic[])
 
   const menu = createCursorMenu([
     {
-      label: "Enter the floor",
+      label: run.depth > 1 ? "Go further down" : "Go in",
       onChoose: () => {
         menu.stopListening();
-        showCombatScreen(container, floor, relics);
+        showCombatScreen(container, floor, run);
       }
     }
   ]);
