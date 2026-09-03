@@ -47,6 +47,10 @@ export function createPlayer(
 
     currentAttackIdentifier: 0,
     secondsUntilCastReady: 0,
-    secondsOfSharpenedWeapon: 0
+    secondsOfSharpenedWeapon: 0,
+
+    currentShield: 0,
+    hitsLandedSinceLastAlly: 0,
+    hasUsedRevive: false
   };
 }
