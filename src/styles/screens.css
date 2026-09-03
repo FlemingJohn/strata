@@ -655,3 +655,114 @@
   color: var(--colour-text-muted);
   font-size: var(--text-size-small);
 }
+
+.preview-frame {
+  border: var(--border-thickness) solid var(--colour-border-dark);
+  background: var(--colour-well);
+  padding: 4px;
+  align-self: center;
+  line-height: 0;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.room-preview-canvas {
+  image-rendering: pixelated;
+  max-width: 100%;
+  height: auto;
+}
+
+.how-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--spacing-medium);
+}
+
+.how-counter {
+  font-family: var(--font-body);
+  font-size: var(--text-size-small);
+  color: var(--colour-text-faint);
+}
+
+.how-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-medium);
+  min-height: 260px;
+}
+
+.how-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-medium);
+  flex-wrap: wrap;
+}
+
+.how-dots {
+  display: flex;
+  gap: 8px;
+}
+
+.how-dot {
+  width: 12px;
+  height: 12px;
+  padding: 0;
+  background: transparent;
+  border: 2px solid var(--colour-border);
+  cursor: pointer;
+}
+
+.how-dot[aria-current="true"] {
+  background: var(--colour-bedrock);
+  border-color: var(--colour-bedrock);
+}
+
+.how-buttons {
+  display: flex;
+  gap: var(--spacing-small);
+}
+
+.how-button {
+  font-family: var(--font-body);
+  font-size: var(--text-size-small);
+  text-transform: uppercase;
+  padding: 8px 16px;
+  background: var(--colour-well);
+  color: var(--colour-text);
+  border: var(--border-thickness) solid var(--colour-border);
+}
+
+.how-button:hover {
+  border-color: var(--colour-bedrock);
+  color: var(--colour-bedrock);
+}
+
+.how-button[disabled] {
+  opacity: 0.35;
+  cursor: default;
+  border-color: var(--colour-border-dark);
+}
+
+.how-button-go {
+  background: var(--colour-bedrock);
+  color: var(--colour-ground);
+  border-color: var(--colour-bedrock);
+}
+
+.how-leave {
+  align-self: flex-start;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--colour-text-faint);
+  font-family: var(--font-body);
+  font-size: var(--text-size-small);
+  text-transform: uppercase;
+  text-decoration: underline;
+}
+
+.how-leave:hover {
+  color: var(--colour-text-muted);
+}
