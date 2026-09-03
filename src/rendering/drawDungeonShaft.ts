@@ -4,10 +4,7 @@ import {
   LEVEL_DIVIDER_EVERY_ROWS,
   ROWS_PER_STRATUM,
   SHAFT_WALL_COLUMNS,
-  STRATUM_TINT_OPACITY,
-  YEAR_LABEL_FONT,
-  YEAR_LABEL_OPACITY,
-  YEAR_MARKER_INSET_TILES
+  STRATUM_TINT_OPACITY
 } from "../constants/backgroundSettings";
 import {
   FLOOR_TILE_VARIANTS,
@@ -17,7 +14,6 @@ import {
 import { STRATUM_SETTINGS } from "../constants/stratumSettings";
 
 const GROUND_COLOUR = "#14110F";
-const LABEL_COLOUR = "#EDE4D8";
 
 function chooseVariantIndex(column: number, row: number, variantCount: number): number {
   const scrambled = Math.imul(column + 1, 73856093) ^ Math.imul(row + 1, 19349663);
@@ -85,7 +81,7 @@ export function drawDungeonShaft(
 
   const columnCount = Math.ceil(canvasWidth / TILE_SIZE) + 1;
   const rowCount = Math.ceil(canvasHeight / TILE_SIZE) + 2;
-  const pixelsScrolledWithinTile = scrollOffsetPixels % TILE_SIZE;
+  const pixelsScrolledWithinTile = Math.floor(scrollOffsetPixels % TILE_SIZE);
   const rowsAlreadyPassed = Math.floor(scrollOffsetPixels / TILE_SIZE);
 
   for (let visibleRow = -1; visibleRow < rowCount; visibleRow++) {
@@ -125,22 +121,5 @@ export function drawDungeonShaft(
     context.fillStyle = stratum.inkColour;
     context.fillRect(0, destinationTop, canvasWidth, TILE_SIZE);
     context.globalAlpha = 1;
-
-    if (wrapIndex(worldRow, ROWS_PER_STRATUM) === 0) {
-      context.globalAlpha = YEAR_LABEL_OPACITY;
-      context.fillStyle = LABEL_COLOUR;
-      context.font = YEAR_LABEL_FONT;
-      context.fillText(
-        String(stratum.approximateYear),
-        YEAR_MARKER_INSET_TILES * TILE_SIZE,
-        destinationTop + TILE_SIZE - 5
-      );
-      context.fillText(
-        stratum.displayName.toUpperCase(),
-        canvasWidth - YEAR_MARKER_INSET_TILES * TILE_SIZE - 40,
-        destinationTop + TILE_SIZE - 5
-      );
-      context.globalAlpha = 1;
-    }
   }
 }
