@@ -16,6 +16,8 @@ import { loadTreeSheets } from "../rendering/loadTreeSheets";
 import { loadSurvivorSprites } from "../rendering/loadSurvivorSprites";
 import { loadAnimatedPropSheets } from "../rendering/loadAnimatedPropSheets";
 import { loadLandmarkSheets } from "../rendering/loadLandmarkSheets";
+import { createCombatOverlay } from "./createCombatOverlay";
+import { waitForPixelFonts } from "../rendering/waitForPixelFonts";
 import { loadTileSheets } from "../rendering/loadTileSheets";
 import { runCombatLoop } from "../game/runCombatLoop";
 import { showDeathScreen } from "./showDeathScreen";
@@ -36,6 +38,9 @@ export function showCombatScreen(
   const stage = document.createElement("div");
   stage.className = "combat-stage";
 
+  const frame = document.createElement("div");
+  frame.className = "game-frame";
+
   const canvas = document.createElement("canvas");
   canvas.className = "game-viewport";
 
@@ -47,11 +52,14 @@ export function showCombatScreen(
   controls.className = "combat-controls";
   controls.textContent = "wasd move · j attack · k roll · l nova · f use · m mute · esc exit";
 
-  stage.append(canvas, status, controls);
+  frame.append(canvas);
+  stage.append(frame, status, controls);
   container.append(stage);
 
   enterFullScreen(document.documentElement);
   const fitController = fitCanvasToViewport(canvas, LOGICAL_WIDTH, LOGICAL_HEIGHT);
+  const overlay = createCombatOverlay(() => fitController.findScale());
+  frame.append(overlay.element);
 
   const player = createPlayer(
     LOGICAL_WIDTH / 2,
@@ -83,7 +91,8 @@ export function showCombatScreen(
     loadTreeSheets(),
     loadSurvivorSprites(),
     loadAnimatedPropSheets(),
-    loadLandmarkSheets()
+    loadLandmarkSheets(),
+    waitForPixelFonts()
   ])
     .then((loaded) => {
       const [
@@ -112,6 +121,7 @@ export function showCombatScreen(
         survivorSprites,
         animatedPropSheets,
         landmarkSheets,
+        overlay,
         {
           onRoomEntered: (room, clearedCount) => {
             status.textContent =
