@@ -5,6 +5,7 @@ export interface PlacedProp {
   region: PropRegion;
   horizontalPosition: number;
   verticalPosition: number;
+  isBreakable: boolean;
 }
 
 export type PropSheets = Record<string, HTMLImageElement>;
