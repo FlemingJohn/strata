@@ -20,6 +20,7 @@ import {
 import {
   drawDyingEnemies,
   drawEnemies,
+  drawEnemyMarkers,
   drawParticles,
   drawProjectiles
 } from "../rendering/drawEnemies";
@@ -125,6 +126,16 @@ import {
   FIRE_FRAMES_PER_SECOND
 } from "../constants/fireSettings";
 import { updateEnemies, updateProjectiles } from "./updateEnemies";
+import { buildPathField } from "./buildPathField";
+import { countReachableEnemies } from "./findUnreachableEnemies";
+import {
+  SECONDS_BEFORE_ENEMIES_ARE_MARKED,
+  SECONDS_BEFORE_THE_WAY_OUT_OPENS_ANYWAY
+} from "../constants/dungeonSettings";
+import {
+  STRIKE_DAMAGE_MULTIPLIER,
+  STRIKE_REACH_PIXELS
+} from "../constants/enemySettings";
 
 export interface CombatLoopController {
   stop: () => void;
@@ -191,6 +202,9 @@ export function runCombatLoop(
   let animatedProps: PlacedAnimatedProp[] = [];
   let landmark: PlacedLandmark | null = null;
   let wasUsingStationLastFrame = false;
+  let secondsWithNoEnemyReachable = 0;
+  let secondsSinceRoomBegan = 0;
+  let hasForcedTheWayOpen = false;
   const embers: Ember[] = [];
   let dyingEnemies: DyingEnemy[] = [];
   const shockwaves: Shockwave[] = [];
@@ -421,6 +435,9 @@ export function runCombatLoop(
     }
 
     secondsUntilExitAllowed = SECONDS_BLOCKING_REENTRY;
+    secondsWithNoEnemyReachable = 0;
+    secondsSinceRoomBegan = 0;
+    hasForcedTheWayOpen = false;
     playTrackForCurrentRoom();
     handlers.onRoomEntered(currentRoom, countClearedRooms());
   }
@@ -595,21 +612,31 @@ export function runCombatLoop(
     }
   }
 
-  function applyEnemyContactDamage(): void {
+  function applyEnemyStrikeDamage(): void {
     for (const enemy of enemies) {
-      const distance = Math.hypot(
-        player.horizontalPosition - enemy.horizontalPosition,
-        player.verticalPosition - enemy.verticalPosition
-      );
-
-      if (distance > enemy.definition.collisionRadius + player.collisionRadius + 1) {
+      if (enemy.behaviour !== "striking" || enemy.hasStrikeLanded) {
         continue;
       }
 
-      const isCharging = enemy.behaviour === "charging";
+      const strikeHorizontal =
+        enemy.horizontalPosition + enemy.strikeHorizontal * STRIKE_REACH_PIXELS * 0.6;
+      const strikeVertical =
+        enemy.verticalPosition + enemy.strikeVertical * STRIKE_REACH_PIXELS * 0.6;
+
+      const distance = Math.hypot(
+        player.horizontalPosition - strikeHorizontal,
+        player.verticalPosition - strikeVertical
+      );
+
+      if (distance > STRIKE_REACH_PIXELS + player.collisionRadius) {
+        continue;
+      }
+
+      enemy.hasStrikeLanded = true;
+
       const wasHurt = applyDamageToPlayer(
         player,
-        enemy.definition.contactDamage * (isCharging ? 1.4 : 1),
+        enemy.definition.contactDamage * STRIKE_DAMAGE_MULTIPLIER,
         enemy.horizontalPosition,
         enemy.verticalPosition,
         KNOCKBACK_SPEED_PIXELS_PER_SECOND * 1.2
@@ -686,7 +713,9 @@ export function runCombatLoop(
   }
 
   function tryToLeaveRoom(): void {
-    if (enemies.length > 0 || secondsUntilExitAllowed > 0) {
+    const isBlockedByEnemies = enemies.length > 0 && !hasForcedTheWayOpen;
+
+    if (isBlockedByEnemies || secondsUntilExitAllowed > 0) {
       return;
     }
 
@@ -778,6 +807,10 @@ export function runCombatLoop(
     drawDyingEnemies(context, dyingEnemies, enemySprites);
     drawEnemies(context, enemies, enemySprites, animationFrameIndex);
     drawAllies(context, allies, enemySprites, animationFrameIndex);
+
+    if (secondsSinceRoomBegan > SECONDS_BEFORE_ENEMIES_ARE_MARKED) {
+      drawEnemyMarkers(context, enemies, elapsedSeconds);
+    }
     drawPlayer();
     drawProjectiles(context, projectiles);
     drawParticles(context, particles);
@@ -896,7 +929,12 @@ export function runCombatLoop(
         sound.play("roll");
       }
 
-      updateEnemies(enemies, projectiles, player, tileMap, secondsElapsed);
+      const pathField = buildPathField(
+        tileMap,
+        player.horizontalPosition,
+        player.verticalPosition
+      );
+      updateEnemies(enemies, projectiles, player, tileMap, pathField, secondsElapsed);
       updateProjectiles(projectiles, tileMap, secondsElapsed);
       const enemiesBeforeAttack = enemies.length;
       const attackResult = resolveAttackHits(
@@ -940,7 +978,7 @@ export function runCombatLoop(
       updateSurvivors(survivors, tileMap, secondsElapsed);
       useStationWhenAsked();
       countdownSharpenedWeapon(player, secondsElapsed);
-      applyEnemyContactDamage();
+      applyEnemyStrikeDamage();
       applyProjectileDamage();
       applyFireContactDamage();
       releaseCastWhenFinished();
@@ -954,7 +992,19 @@ export function runCombatLoop(
         secondsElapsed
       );
 
-      if (enemies.length === 0) {
+      secondsSinceRoomBegan += secondsElapsed;
+
+      if (enemies.length > 0 && countReachableEnemies(enemies, pathField) === 0) {
+        secondsWithNoEnemyReachable += secondsElapsed;
+      } else {
+        secondsWithNoEnemyReachable = 0;
+      }
+
+      if (secondsWithNoEnemyReachable >= SECONDS_BEFORE_THE_WAY_OUT_OPENS_ANYWAY) {
+        hasForcedTheWayOpen = true;
+      }
+
+      if (enemies.length === 0 || hasForcedTheWayOpen) {
         grantRoomClearedReward();
         tryToLeaveRoom();
       }
