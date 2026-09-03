@@ -561,3 +561,7 @@
 .world-prompt-spent .world-prompt-text {
   color: var(--colour-text-faint);
 }
+
+.hud-reading-shield {
+  color: #7fb4d8;
+}
