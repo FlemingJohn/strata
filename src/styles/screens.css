@@ -397,8 +397,9 @@
 
 .combat-status {
   position: absolute;
-  top: 12px;
-  left: 16px;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
   margin: 0;
   font-size: var(--text-size-small);
   color: var(--colour-text-faint);
@@ -418,4 +419,145 @@
   text-transform: uppercase;
   text-shadow: 2px 2px 0 #000;
   pointer-events: none;
+}
+
+.game-frame {
+  position: relative;
+  display: inline-block;
+  line-height: 0;
+}
+
+.combat-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  line-height: 16px;
+}
+
+.combat-hud {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-medium);
+  padding: 8px var(--spacing-medium);
+  background: rgba(11, 9, 8, 0.86);
+  border-bottom: 2px solid var(--colour-border-dark);
+  font-family: var(--font-body);
+  font-size: 16px;
+  text-transform: uppercase;
+}
+
+.hud-meters {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 180px;
+  flex: none;
+}
+
+.hud-bar {
+  height: 12px;
+  border: 2px solid var(--colour-border-dark);
+  background: #2a1512;
+}
+
+.hud-bar-stamina {
+  height: 8px;
+  background: #16221b;
+}
+
+.hud-bar-fill {
+  height: 100%;
+  width: 100%;
+  background: #c4523a;
+}
+
+.hud-bar-stamina .hud-bar-fill {
+  background: #5b9c77;
+}
+
+.hud-middle,
+.hud-right {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-medium);
+}
+
+.hud-right {
+  margin-left: auto;
+}
+
+.hud-reading {
+  color: var(--colour-text-muted);
+  white-space: nowrap;
+}
+
+.hud-reading-faint {
+  color: var(--colour-text-faint);
+}
+
+.hud-reading-health {
+  color: var(--colour-text);
+  min-width: 3ch;
+}
+
+.hud-reading-depth {
+  color: var(--colour-bedrock);
+}
+
+.hud-reading-enemies {
+  color: #c4523a;
+}
+
+.hud-reading-clear {
+  color: #5b9c77;
+}
+
+.hud-reading-danger {
+  color: #c4523a;
+}
+
+.hud-reading-ready {
+  color: var(--colour-bedrock);
+}
+
+.hud-reading-sharp {
+  color: #f5d18a;
+}
+
+.world-prompt {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  background: rgba(14, 10, 8, 0.88);
+  border: 2px solid var(--colour-border-dark);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 16px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.world-prompt-key {
+  padding: 0 6px;
+  background: var(--colour-bedrock);
+  color: #14110f;
+}
+
+.world-prompt-text {
+  color: #f5d18a;
+}
+
+.world-prompt-spent .world-prompt-key {
+  background: var(--colour-text-faint);
+}
+
+.world-prompt-spent .world-prompt-text {
+  color: var(--colour-text-faint);
 }
