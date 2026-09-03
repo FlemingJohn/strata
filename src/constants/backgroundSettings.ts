@@ -16,7 +16,6 @@ export const DUST_OPACITY_MAXIMUM = 0.3;
 export const DUST_COLOUR = "#EDE4D8";
 
 export const YEAR_LABEL_OPACITY = 0.34;
-export const YEAR_LABEL_FONT = "6px monospace";
 
 export const BACKGROUND_SEED = 20260906;
 
