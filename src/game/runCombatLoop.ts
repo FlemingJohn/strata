@@ -133,6 +133,7 @@ export interface CombatLoopController {
 }
 
 export interface CombatLoopHandlers {
+  onRunAbandoned: () => void;
   onPlayerDied: (roomsCleared: number, kills: number) => void;
   onRoomEntered: (room: DungeonRoom, roomsCleared: number) => void;
   onFloorCompleted: (roomsCleared: number, kills: number) => void;
@@ -155,6 +156,7 @@ export function runCombatLoop(
   animatedPropSheets: AnimatedPropSheets,
   landmarkSheets: LandmarkSheets,
   overlay: CombatOverlay,
+  findScale: () => number,
   handlers: CombatLoopHandlers
 ): CombatLoopController {
   const context = canvas.getContext("2d");
@@ -175,7 +177,11 @@ export function runCombatLoop(
   );
   const stratum = findStratumForBlock(floor.description.sourceBlockNumber);
   const respectsReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const inputReader = createInputReader();
+  const inputReader = createInputReader({
+    canvas,
+    findScale,
+    onLeaveRequested: () => handlers.onRunAbandoned()
+  });
   const feedback = createImpactFeedback();
   const particles: CombatParticle[] = [];
   let projectiles: Projectile[] = [];
