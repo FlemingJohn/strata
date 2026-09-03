@@ -51,6 +51,21 @@ export function blockRoomTiles(
   }
 }
 
-export function clearBlockedTiles(tileMap: RoomTileMap): void {
-  tileMap.blockedTiles.clear();
+export function unblockRoomTiles(
+  tileMap: RoomTileMap,
+  centreHorizontal: number,
+  verticalPosition: number,
+  widthInPixels: number,
+  heightInPixels: number
+): void {
+  const leftColumn = Math.floor((centreHorizontal - widthInPixels / 2) / TILE_SIZE);
+  const rightColumn = Math.floor((centreHorizontal + widthInPixels / 2 - 1) / TILE_SIZE);
+  const topRow = Math.floor((verticalPosition - heightInPixels) / TILE_SIZE);
+  const bottomRow = Math.floor((verticalPosition - 1) / TILE_SIZE);
+
+  for (let row = topRow; row <= bottomRow; row++) {
+    for (let column = leftColumn; column <= rightColumn; column++) {
+      tileMap.blockedTiles.delete(nameTile(column, row));
+    }
+  }
 }
