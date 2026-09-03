@@ -63,11 +63,11 @@ export function resolveAttackHits(
   feedback: ImpactFeedback,
   respectsReducedMotion: boolean,
   dyingEnemies: DyingEnemy[]
-): number {
+): { killCount: number; hitCount: number } {
   const area = findActiveAttackArea(player);
 
   if (!area) {
-    return 0;
+    return { killCount: 0, hitCount: 0 };
   }
 
   const shape = ATTACK_SHAPES[player.weaponStyle];
@@ -82,6 +82,7 @@ export function resolveAttackHits(
   );
 
   let killCount = 0;
+  let hitCount = 0;
 
   for (let index = enemies.length - 1; index >= 0; index--) {
     const enemy = enemies[index];
@@ -117,6 +118,7 @@ export function resolveAttackHits(
 
     burstParticles(particles, enemy.horizontalPosition, enemy.verticalPosition, 7, "#FFFFFF", 130);
     recordHit(feedback, respectsReducedMotion);
+    hitCount += 1;
 
     if (enemy.currentHealth <= 0) {
       burstParticles(particles, enemy.horizontalPosition, enemy.verticalPosition, 20, "#C4523A", 160);
@@ -146,5 +148,5 @@ export function resolveAttackHits(
     }
   }
 
-  return killCount;
+  return { killCount, hitCount };
 }
