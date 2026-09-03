@@ -1,15 +1,20 @@
 import type { DungeonFloor } from "../types/dungeon";
-import type { EquippedRelic } from "../types/relic";
+import type { RunProgress } from "../types/runProgress";
 import { ROOM_TILE_COLUMNS, ROOM_TILE_ROWS } from "../constants/dungeonSettings";
 import { TILE_SIZE } from "../constants/tilesetSettings";
-import { chooseWeaponStyle, findDeepestRelic } from "../game/chooseWeaponStyle";
+import { chooseWeaponStyle } from "../game/chooseWeaponStyle";
+import { countFloorsAvailable } from "../game/chooseBlockForDepth";
+import {
+  HEALTH_KEPT_LOWEST_SHARE,
+  HEALTH_RESTORED_BETWEEN_FLOORS
+} from "../constants/runSettings";
+import { showFloorScreen } from "./showFloorScreen";
 import { createPlayer } from "../game/createPlayer";
 import { enterFullScreen, leaveFullScreen } from "./enterFullScreen";
 import { fitCanvasToViewport } from "../rendering/fitCanvasToViewport";
 import { loadEnemySprites } from "../rendering/loadEnemySprites";
 import { loadLpcCharacter } from "../rendering/loadLpcCharacter";
 import { chooseAppearanceFromAddress, describeAppearance } from "../game/chooseAppearanceFromAddress";
-import { DEMO_WALLET_ADDRESS } from "../constants/characterAppearance";
 import { loadPropSheets } from "../rendering/loadPropSheets";
 import { loadStationSheets } from "../rendering/loadStationSheets";
 import { loadTreeSheets } from "../rendering/loadTreeSheets";
@@ -28,10 +33,11 @@ const LOGICAL_HEIGHT = ROOM_TILE_ROWS * TILE_SIZE;
 export function showCombatScreen(
   container: HTMLElement,
   floor: DungeonFloor,
-  relics: EquippedRelic[],
-  walletAddress: string = DEMO_WALLET_ADDRESS
+  run: RunProgress
 ): void {
   container.replaceChildren();
+
+  const relics = run.equippedRelics;
 
   const startRoom = floor.rooms.find((room) => room.purpose === "start") ?? floor.rooms[0];
 
@@ -68,17 +74,38 @@ export function showCombatScreen(
     relics
   );
 
-  const deepestRelic = findDeepestRelic(relics);
-  const appearance = chooseAppearanceFromAddress(walletAddress);
+  if (run.carriedHealth !== null) {
+    player.currentHealth = Math.max(
+      Math.round(player.maximumHealth * HEALTH_KEPT_LOWEST_SHARE),
+      Math.min(
+        player.maximumHealth,
+        run.carriedHealth + HEALTH_RESTORED_BETWEEN_FLOORS
+      )
+    );
+  }
 
-  function finishRun(outcome: "died" | "floorCleared", roomsCleared: number, kills: number): void {
+  const floorsAvailable = countFloorsAvailable(run.provenRelics);
+
+  function goDeeper(roomsCleared: number, kills: number): void {
+    fitController.stop();
+    showFloorScreen(container, {
+      ...run,
+      depth: run.depth + 1,
+      roomsClearedSoFar: run.roomsClearedSoFar + roomsCleared,
+      killsSoFar: run.killsSoFar + kills,
+      carriedHealth: player.currentHealth
+    });
+  }
+
+  const appearance = chooseAppearanceFromAddress(run.walletAddress);
+
+  function finishRun(outcome: "died" | "runEnded", roomsCleared: number, kills: number): void {
     fitController.stop();
     leaveFullScreen();
-    showDeathScreen(container, floor, relics, {
+    showDeathScreen(container, floor, run, {
       outcome,
       roomsCleared,
-      kills,
-      deepestBlockNumber: deepestRelic ? deepestRelic.sourceBlockNumber : 0
+      kills
     });
   }
 
@@ -132,7 +159,12 @@ export function showCombatScreen(
             status.textContent = message;
           },
           onFloorCompleted: (clearedCount, kills) => {
-            finishRun("floorCleared", clearedCount, kills);
+            if (run.depth < floorsAvailable) {
+              goDeeper(clearedCount, kills);
+              return;
+            }
+
+            finishRun("runEnded", clearedCount, kills);
           },
           onPlayerDied: (roomsCleared, kills) => {
             finishRun("died", roomsCleared, kills);
