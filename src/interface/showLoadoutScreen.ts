@@ -12,6 +12,8 @@ import { chooseWeaponStyle, findDeepestRelic } from "../game/chooseWeaponStyle";
 import { showFloorScreen } from "./showFloorScreen";
 import { createCursorMenu } from "./createCursorMenu";
 import { STRATUM_SETTINGS } from "../constants/stratumSettings";
+import { FIRST_DEPTH } from "../constants/runSettings";
+import { DEMO_WALLET_ADDRESS } from "../constants/characterAppearance";
 
 const WEAPON_DAMAGE = {
   slice: SLICE_DAMAGE,
@@ -113,13 +115,20 @@ export function showLoadoutScreen(container: HTMLElement, relics: EquippedRelic[
 
   const menu = createCursorMenu([
     {
-      label: "Descend",
+      label: "Go down",
       onChoose: () => {
         menu.stopListening();
-        showFloorScreen(
-          container,
-          relics.filter((relic) => chosenHashes.has(relic.sourceTransactionHash))
-        );
+        showFloorScreen(container, {
+          provenRelics: relics,
+          equippedRelics: relics.filter((relic) =>
+            chosenHashes.has(relic.sourceTransactionHash)
+          ),
+          depth: FIRST_DEPTH,
+          roomsClearedSoFar: 0,
+          killsSoFar: 0,
+          carriedHealth: null,
+          walletAddress: DEMO_WALLET_ADDRESS
+        });
       }
     }
   ]);
