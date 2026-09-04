@@ -1,8 +1,8 @@
 import type { MusicEngine, MusicShape, MusicTrack, MusicVoice, TrackName } from "../types/music";
+import { findGameSettings, watchGameSettings } from "../game/keepGameSettings";
 import {
   MUSIC_FADE_SECONDS,
   MUSIC_TRACKS,
-  MUSIC_VOLUME,
   PULSE_FILTER_FREQUENCY,
   SCHEDULER_INTERVAL_MILLISECONDS,
   SCHEDULE_AHEAD_SECONDS,
@@ -155,6 +155,10 @@ export function createMusicEngine(): MusicEngine {
     }
   }
 
+  function chosenLevel(): number {
+    return isMuted || !currentTrack ? 0 : findGameSettings().musicVolume;
+  }
+
   function fadeTo(level: number): void {
     const context = findAudioContext();
     const destination = ensureMusicGain();
@@ -165,6 +169,10 @@ export function createMusicEngine(): MusicEngine {
 
     destination.gain.setTargetAtTime(level, context.currentTime, MUSIC_FADE_SECONDS / 3);
   }
+
+  watchGameSettings(function followTheVolumeSetting() {
+    fadeTo(chosenLevel());
+  });
 
   return {
     playTrack(trackName: TrackName, shape: MusicShape | null): void {
@@ -193,7 +201,7 @@ export function createMusicEngine(): MusicEngine {
         schedulerHandle = window.setInterval(runScheduler, SCHEDULER_INTERVAL_MILLISECONDS);
       }
 
-      fadeTo(isMuted ? 0 : MUSIC_VOLUME);
+      fadeTo(chosenLevel());
     },
 
     stopTrack(): void {
@@ -206,7 +214,7 @@ export function createMusicEngine(): MusicEngine {
 
     setMuted(nextIsMuted: boolean): void {
       isMuted = nextIsMuted;
-      fadeTo(isMuted || !currentTrack ? 0 : MUSIC_VOLUME);
+      fadeTo(chosenLevel());
     }
   };
 }
