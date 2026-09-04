@@ -8,5 +8,4 @@ export interface RunProgress {
   killsSoFar: number;
   carriedHealth: number | null;
   walletAddress: string;
-  openingNotice?: string;
 }
