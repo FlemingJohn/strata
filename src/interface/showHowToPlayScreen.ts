@@ -3,8 +3,8 @@ import type { RoomPreviewController } from "../rendering/startRoomPreview";
 import { CONTROL_LINES } from "../constants/controlSettings";
 import { HOW_TO_PLAY_SECTIONS } from "../constants/howToPlaySettings";
 import { startRoomPreview } from "../rendering/startRoomPreview";
-import { startPracticeRun } from "../game/startPracticeRun";
 import { showTitleScreen } from "./showTitleScreen";
+import { showProvingScreen } from "./showProvingScreen";
 import { findSoundEngine } from "../audio/sharedSoundEngine";
 
 function createLine(text: string): HTMLElement {
@@ -177,7 +177,7 @@ export function showHowToPlayScreen(container: HTMLElement): void {
     });
 
     backButton.disabled = sectionIndex === 0;
-    nextButton.textContent = isLast ? "Play now" : "Next";
+    nextButton.textContent = isLast ? "Start a run" : "Next";
     nextButton.classList.toggle("how-button-go", isLast);
   }
 
@@ -213,7 +213,7 @@ export function showHowToPlayScreen(container: HTMLElement): void {
     if (sectionIndex === HOW_TO_PLAY_SECTIONS.length - 1) {
       sound.play("menuChoose");
       leave();
-      startPracticeRun(container);
+      showProvingScreen(container);
       return;
     }
 
