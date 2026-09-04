@@ -11,6 +11,7 @@ import {
 import { showFloorScreen } from "./showFloorScreen";
 import { createPlayer } from "../game/createPlayer";
 import { enterFullScreen, leaveFullScreen } from "./enterFullScreen";
+import { findGameSettings } from "../game/keepGameSettings";
 import { fitCanvasToViewport } from "../rendering/fitCanvasToViewport";
 import { loadEnemySprites } from "../rendering/loadEnemySprites";
 import { loadLpcCharacter } from "../rendering/loadLpcCharacter";
@@ -52,7 +53,7 @@ export function showCombatScreen(
 
   const status = document.createElement("p");
   status.className = "combat-status";
-  status.textContent = run.openingNotice ?? "getting the floor ready";
+  status.textContent = "getting the floor ready";
 
   const controls = document.createElement("p");
   controls.className = "combat-controls";
@@ -63,7 +64,9 @@ export function showCombatScreen(
   stage.append(frame, status, controls);
   container.append(stage);
 
-  enterFullScreen(document.documentElement);
+  if (findGameSettings().entersFullScreen) {
+    enterFullScreen(document.documentElement);
+  }
   const fitController = fitCanvasToViewport(canvas, LOGICAL_WIDTH, LOGICAL_HEIGHT);
   const overlay = createCombatOverlay(() => fitController.findScale());
   frame.append(overlay.element);
