@@ -1,4 +1,14 @@
 import { createCursorMenu } from "./createCursorMenu";
+import { loadLpcCharacter } from "../rendering/loadLpcCharacter";
+import { chooseAppearanceFromAddress } from "../game/chooseAppearanceFromAddress";
+import { DEMO_WALLET_ADDRESS } from "../constants/characterAppearance";
+import { drawLpcCharacter } from "../rendering/drawLpcCharacter";
+import {
+  LPC_FRAMES_PER_SECOND,
+  LPC_FRAME_SIZE,
+  TITLE_SCREEN_HERO_SCALE
+} from "../constants/lpcCharacterSettings";
+import { showSettingsScreen } from "./showSettingsScreen";
 import { showProvingScreen } from "./showProvingScreen";
 import { startDungeonBackground } from "../rendering/startDungeonBackground";
 import { fetchAttestationReach } from "../chain/fetchAttestationReach";
@@ -7,7 +17,6 @@ import { findSoundEngine } from "../audio/sharedSoundEngine";
 import { resumeAudioContext } from "../audio/findAudioContext";
 import { showLadderScreen } from "./showLadderScreen";
 import { showHowToPlayScreen } from "./showHowToPlayScreen";
-import { startPracticeRun } from "../game/startPracticeRun";
 import { TITLE_SCREEN_CONTROL_HINT } from "../constants/titleScreenSettings";
 
 function createBackgroundCanvas(): HTMLCanvasElement {
@@ -37,6 +46,41 @@ function createGameName(): HTMLElement {
   return name;
 }
 
+
+function createStandingHero(): HTMLCanvasElement {
+  const heroCanvas = document.createElement("canvas");
+  heroCanvas.className = "title-screen-hero";
+  heroCanvas.setAttribute("aria-hidden", "true");
+  heroCanvas.width = LPC_FRAME_SIZE;
+  heroCanvas.height = LPC_FRAME_SIZE;
+  heroCanvas.style.width = `${LPC_FRAME_SIZE * TITLE_SCREEN_HERO_SCALE}px`;
+  heroCanvas.style.height = `${LPC_FRAME_SIZE * TITLE_SCREEN_HERO_SCALE}px`;
+
+  const context = heroCanvas.getContext("2d");
+
+  if (!context) {
+    return heroCanvas;
+  }
+
+  context.imageSmoothingEnabled = false;
+
+  loadLpcCharacter(chooseAppearanceFromAddress(DEMO_WALLET_ADDRESS))
+    .then((sheets) => {
+      const sheet = sheets.idle;
+      let frameIndex = 0;
+
+      window.setInterval(() => {
+        context.clearRect(0, 0, LPC_FRAME_SIZE, LPC_FRAME_SIZE);
+        drawLpcCharacter(context, sheet, frameIndex, "down", 0, 0);
+        frameIndex = (frameIndex + 1) % sheet.frameCount;
+      }, 1000 / LPC_FRAMES_PER_SECOND.idle);
+    })
+    .catch(() => {
+      heroCanvas.remove();
+    });
+
+  return heroCanvas;
+}
 
 function createWorldStatusStrip(): HTMLElement {
   const strip = document.createElement("div");
@@ -111,10 +155,10 @@ export function showTitleScreen(container: HTMLElement): void {
   tagline.textContent = "Dig through the history you made";
 
   const menu = createCursorMenu([
-    { label: "Play now", onChoose: () => leaveForPractice() },
     { label: "Connect wallet", onChoose: () => leaveForProving() },
     { label: "Demo wallet", onChoose: () => leaveForProving() },
     { label: "How to play", onChoose: () => leaveForHowToPlay() },
+    { label: "Settings", onChoose: () => leaveForSettings() },
     { label: "Ladder", onChoose: () => leaveForLadder() }
   ]);
 
@@ -124,16 +168,16 @@ export function showTitleScreen(container: HTMLElement): void {
     showProvingScreen(container);
   }
 
-  function leaveForPractice(): void {
-    menu.stopListening();
-    stopWaitingForFirstAction();
-    startPracticeRun(container);
-  }
-
   function leaveForHowToPlay(): void {
     menu.stopListening();
     stopWaitingForFirstAction();
     showHowToPlayScreen(container);
+  }
+
+  function leaveForSettings(): void {
+    menu.stopListening();
+    stopWaitingForFirstAction();
+    showSettingsScreen(container);
   }
 
   function leaveForLadder(): void {
@@ -145,6 +189,7 @@ export function showTitleScreen(container: HTMLElement): void {
   panel.append(
     createGameName(),
     tagline,
+    createStandingHero(),
     menu.element,
     createWorldStatusStrip(),
     createControlHint()
