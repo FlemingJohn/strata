@@ -45,6 +45,7 @@ import { chooseEliteNames, spawnEnemiesForRoom } from "./createEnemy";
 import { updateDyingEnemies } from "./createDyingEnemy";
 import { applyDamageToPlayer, updatePlayer } from "./updatePlayer";
 import { findSoundEngine } from "../audio/sharedSoundEngine";
+import { findGameSettings } from "./keepGameSettings";
 import { findMusicEngine } from "../audio/sharedMusicEngine";
 import { chooseMusicShapeFromRoot } from "./chooseMusicShapeFromRoot";
 import { MUSIC_TRACKS } from "../constants/musicSettings";
@@ -176,7 +177,9 @@ export function runCombatLoop(
     MUSIC_TRACKS.boss.beatsPerMinute
   );
   const stratum = findStratumForBlock(floor.description.sourceBlockNumber);
-  const respectsReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const respectsReducedMotion =
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+    !findGameSettings().shakesTheScreen;
   const inputReader = createInputReader({
     canvas,
     findScale,
