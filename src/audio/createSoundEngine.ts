@@ -1,9 +1,6 @@
 import type { SoundEngine, SoundName } from "../types/sound";
-import {
-  EFFECT_VOLUME,
-  MUTE_STORAGE_KEY,
-  SOUND_RECIPES
-} from "../constants/soundSettings";
+import { MUTE_STORAGE_KEY, SOUND_RECIPES } from "../constants/soundSettings";
+import { findGameSettings, watchGameSettings } from "../game/keepGameSettings";
 import { findAudioContext, resumeAudioContext } from "./findAudioContext";
 
 function readStoredMuteChoice(): boolean {
@@ -38,6 +35,10 @@ export function createSoundEngine(): SoundEngine {
   let effectGain: GainNode | null = null;
   let isMuted = readStoredMuteChoice();
 
+  function chosenVolume(): number {
+    return isMuted ? 0 : findGameSettings().effectVolume;
+  }
+
   function ensureEffectGain(): GainNode | null {
     const context = findAudioContext();
 
@@ -47,7 +48,7 @@ export function createSoundEngine(): SoundEngine {
 
     if (!effectGain) {
       effectGain = context.createGain();
-      effectGain.gain.value = isMuted ? 0 : EFFECT_VOLUME;
+      effectGain.gain.value = chosenVolume();
       effectGain.connect(context.destination);
     }
 
@@ -100,9 +101,17 @@ export function createSoundEngine(): SoundEngine {
     oscillator.stop(startTime + recipe.seconds);
   }
 
+  watchGameSettings(() => {
+    const context = findAudioContext();
+
+    if (context && effectGain) {
+      effectGain.gain.setTargetAtTime(chosenVolume(), context.currentTime, 0.02);
+    }
+  });
+
   return {
     play(soundName: SoundName): void {
-      if (isMuted) {
+      if (isMuted || findGameSettings().effectVolume <= 0) {
         return;
       }
 
@@ -117,7 +126,7 @@ export function createSoundEngine(): SoundEngine {
       const destination = ensureEffectGain();
 
       if (context && destination) {
-        destination.gain.setTargetAtTime(isMuted ? 0 : EFFECT_VOLUME, context.currentTime, 0.02);
+        destination.gain.setTargetAtTime(chosenVolume(), context.currentTime, 0.02);
       }
 
       return isMuted;
