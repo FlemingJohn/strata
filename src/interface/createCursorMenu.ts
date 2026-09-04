@@ -1,6 +1,7 @@
 import type { MenuController, MenuEntry } from "../types/menu";
 import { findSoundEngine } from "../audio/sharedSoundEngine";
 import { enterFullScreen } from "./enterFullScreen";
+import { findGameSettings } from "../game/keepGameSettings";
 
 const CURSOR_SYMBOL = "▶";
 
@@ -29,7 +30,10 @@ export function createCursorMenu(entries: MenuEntry[]): MenuController {
   }
 
   function chooseEntry(entry: MenuEntry): void {
-    enterFullScreen(document.documentElement);
+    if (findGameSettings().entersFullScreen) {
+      enterFullScreen(document.documentElement);
+    }
+
     sound.resumeAfterUserAction();
     sound.play("menuChoose");
     entry.onChoose();
