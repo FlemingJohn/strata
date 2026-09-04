@@ -36,3 +36,4 @@ export const LPC_FRAMES_PER_SECOND: Record<LpcAnimationName, number> = {
   hurt: 8,
   spellcast: 10
 };
+export const TITLE_SCREEN_HERO_SCALE = 3;
